@@ -43,3 +43,12 @@
 (defn data->
   [d o l m]
   (assoc m :data (paginate-data-> d o l)))
+
+(defn paginate-pipeline->
+  "Combinatorial paginated pipeline transformer."
+  [o l t d m]
+  (->> m
+       (page-offset-> o)
+       (page-limit-> l)
+       (page-total-> t)
+       (data-> d o l)))
