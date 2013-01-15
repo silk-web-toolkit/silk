@@ -4,4 +4,5 @@
 .DS_Store
 *.jar
 .lein-deps-sum
+pom.xml
 
