@@ -1,7 +1,8 @@
 (ns silk.transform.paginate
   "Pagination related transformations.
    Note our payload is typically something like pipe-data
-   see input.pipeline.")
+   see input.pipeline."
+   (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 
 ;; =============================================================================
 ;; Utility functions
@@ -42,11 +43,16 @@
 
 (defn data->
   [d o l m]
+  (debug (str "d sample : " (vec (take 5 d))))
+  (debug (str "o : " o))
+  (debug (str "l : " l))
+  (debug (str "m : " m))
   (assoc m :data (paginate-data-> d o l)))
 
 (defn paginate-pipeline->
   "Combinatorial paginated pipeline transformer."
   [o l t d m]
+  (debug "Entering paginate-pipeline combinatorial transformer")
   (->> m
        (page-offset-> o)
        (page-limit-> l)
