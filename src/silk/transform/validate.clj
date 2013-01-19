@@ -19,14 +19,14 @@
   "Validate structural integrity of seed-data according to a predicate p.
    Yields :invalid or :valid."
   [p m]
-  (when p (assoc m :structural-precog :valid)))
+  (if p (assoc m :structural-precog :valid) m))
 
 (defn field-precog->
   "Validate specific data fields, partitioning given a function fn.
    Reduces :seed-data accordingly upon finding invalid entries.
    Yields :invalid, :partially-valid or :valid."
   [fn m]
-  (when (= :valid (:structural-precog m))
+  (if (= :valid (:structural-precog m))
     (let [fn-val (fn (:seed-data m))]
       (cond
         (empty? (last fn-val)) (assoc m :field-precog :valid)
@@ -34,7 +34,8 @@
         (and (> (count (first fn-val)) 0) (> (count (last fn-val)) 0))
           (assoc m :field-precog :partially-valid
                    :seed-data (first fn-val)
-                   :invalid-field-data (last fn-val))))))
+                   :invalid-field-data (last fn-val))))
+    m))
 
 ;;(defn tx-eligibility-precog->
   ;;"Validate if the system should accept the data.
