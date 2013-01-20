@@ -22,7 +22,8 @@
   (if p (assoc m :structural-precog :valid) m))
 
 (defn field-precog->
-  "Validate specific data fields, partitioning given a function fn.
+  "TODO: refactor common elements with this and tx-eligibility-precog->.
+   Validate specific data fields, partitioning given a function fn.
    Reduces :seed-data accordingly upon finding invalid entries.
    Yields :invalid, :partially-valid or :valid."
   [fn m]
@@ -37,9 +38,19 @@
                    :invalid-field-data (last fn-val))))
     m))
 
-;;(defn tx-eligibility-precog->
-  ;;"Validate if the system should accept the data.
-   ;;Yields :invalid, :partially-valid or :valid."
-;;[ m]
-;;(when-not (= :invalid (:field-precog m))
-  ;;)
+(defn tx-eligibility-precog->
+  "TODO: refactor common elements with this and field-precog->.
+   Validate if the system should accept the data, partitoining given a function fn.
+   Reduces :seed-data accordingly upon finding invalid entries.
+   Yields :invalid, :partially-valid or :valid."
+  [fn c m]
+  (if (= (:field-precog m) :invalid)
+    m
+    (let [fn-val (fn c (:seed-data m))]
+      (cond
+        (empty? (last fn-val)) (assoc m :tx-eligibility-precog :valid)
+        (empty? (first fn-val)) m
+        (and (> (count (first fn-val)) 0) (> (count (last fn-val)) 0))
+          (assoc m :tx-eligibility-precog :partially-valid
+                   :seed-data (first fn-val)
+                   :invalid-tx-data (last fn-val))))))
