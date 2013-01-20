@@ -1,6 +1,6 @@
 (ns silk.transform.paginate
   "Pagination related transformations.
-   Note our payload is typically something like pipe-data
+   Note our payload is typically something like paginate-payload
    see input.pipeline."
    (:use [taoensso.timbre :as timbre :only (trace debug info warn error)]))
 

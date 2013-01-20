@@ -1,10 +1,10 @@
 (ns silk.input.pipeline
   "Generic inputs (payloads) within a transformation pipeline.")
 
-(def pipe-data {:data []
-                :page {:offset nil :limit nil :total nil}
-                :search nil
-                :uri nil})
+(def paginate-payload {:data []
+                       :page {:offset nil :limit nil :total nil}
+                       :search nil
+                       :uri nil})
 
 ;; Structural precog checks the integrity of the source as a unit
 ;;   :structural-precog (:invalid|:valid)
