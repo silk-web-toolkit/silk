@@ -16,7 +16,7 @@
 
 (defn offset-2-page->
   [o l]
-  (if (= o 0)
+  (if (zero? o)
     1
     (inc (/ o l))))
 
