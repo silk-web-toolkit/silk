@@ -11,6 +11,7 @@
 
 (defonce silk-home (str user-home fs ".silk"))
 
+;; REVIEW: this is not useful to silk-eden, it is dynamic webapp specific
 (defonce templates-path
   (get (System/getenv)
     "SILK_TEMPLATES_PATH" 
