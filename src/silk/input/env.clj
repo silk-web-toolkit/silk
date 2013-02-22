@@ -30,3 +30,8 @@
   (get (System/getenv)
     "SILK_VIEWS_PATH"
     (str pwd fs "view" fs)))
+
+(defonce site-path
+  (get (System/getenv)
+    "SILK_SITE_PATH"
+    (str pwd fs "site" fs)))
