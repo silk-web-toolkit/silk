@@ -40,7 +40,7 @@
 
 (defn tx-eligibility-precog->
   "TODO: refactor common elements with this and field-precog->.
-   Validate if the system should accept the data, partitoining given a function fn.
+   Validate if the system should accept the data, partitioning given a function fn.
    Reduces :seed-data accordingly upon finding invalid entries.
    Yields :invalid, :partially-valid or :valid."
   [fn c m]
