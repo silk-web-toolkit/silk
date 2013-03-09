@@ -1,7 +1,8 @@
 (ns silk.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
-            [silk.input.env :as se]))
+            [silk.input.env :as se])
+  (:use [clojure.string :only [replace]]))
 
 (defn runtime-template 
   "Return a runtime Silk template from the runtime silk template directory given a 
@@ -20,4 +21,4 @@
   "Return a Silk component from the silk components directory given a filename f.
   A Silk component is raw markup."
   [f]
-  (file (str se/components-path f)))
+  (file (str se/components-path (replace f #"/" se/fs))))
