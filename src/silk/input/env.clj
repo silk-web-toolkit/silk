@@ -24,7 +24,7 @@
 (defonce components-path
   (get (System/getenv)
     "SILK_COMPONENTS_PATH" 
-    (str silk-home fs "repositories" fs "components" fs)))
+    (str silk-home fs "repositories" fs "components")))
 
 (defonce views-path
   (get (System/getenv)
