@@ -24,3 +24,5 @@
         sep (if (re-find #"indow" os) "\\\\" se/fs)
         lv (str se/components-path sep (.replaceAll f "/" sep))]
   (file lv)))
+
+(defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
