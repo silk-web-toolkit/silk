@@ -2,7 +2,7 @@
 
 ## About
 
-A compile time web publishing toolkit created at [bheap ltd](http://ww.bheap.co.uk/) and improved by the [community](http://www.silkyweb.org/community.html).
+A compile time web publishing toolkit created at [bheap ltd](http://www.bheap.co.uk/) and improved by the [community](http://www.silkyweb.org/community.html).
 
 Silk allows you to build static websites out of re-usable building blocks without the use of server side languages, just use HTML, CSS and Javascript.  Sites built with Silk are clean from semantic pollution, no tag soup.
 
