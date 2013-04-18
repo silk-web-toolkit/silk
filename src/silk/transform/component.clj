@@ -30,6 +30,8 @@
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/re-id #"silk-component"))
         comp-ids (map #(:id (:attrs %)) comps)]
-    (assoc t :content
-      (first (as-> (:content t) page
-      (map #(component-inject page %) comp-ids))))))
+    (if-not (empty? comp-ids)
+      (assoc t :content
+        (first (as-> (:content t) page
+                     (map #(component-inject page %) comp-ids))))
+      t)))
