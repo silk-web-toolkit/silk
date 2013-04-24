@@ -5,7 +5,8 @@
             [silk.input.env :as se]
             [silk.input.file :as sf]
             [silk.input.file :as sf]
-            [silk.transform.path :as sp]))
+            [silk.transform.path :as sp])
+  (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
 ;; Payload transformation functions, see namespace comment
@@ -26,9 +27,16 @@
                 (l/id="silk-view")
                   (l/replace
                     (l/select parsed-view
-                      (l/child-of (l/element= :body) (l/any)))))}))
+                      (l/child-of (l/element= :body) (l/any))))
+                (l/element= :body)
+                  (l/add-class 
+                    (or
+                      (:content (:attrs (first meta-template)))
+                      "default"))
+                (l/element= :body)
+                  (l/add-class (first (split (.getName v) #"\."))))}))
 
-(defn template-wrap-> 
+(defn template-wrap->
   []
   (let [views (sf/get-views)]
     (map #(view-inject %) views)))
