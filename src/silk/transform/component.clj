@@ -19,19 +19,16 @@
     (l/select parsed-comp
               (l/child-of (l/element= :body) (l/any)))))
 
-(defn- component-inject
-  [c i]
-   (l/document
-     (l/parse c)
-       (l/id= i)
-       (l/replace (build-component i))))
-
 (defn process-components
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/re-id #"silk-component"))
         comp-ids (map #(:id (:attrs %)) comps)]
-    (if-not (empty? comp-ids)
-      (assoc t :content
-        (first (as-> (:content t) page
-                     (map #(component-inject page %) comp-ids))))
-      t)))
+    (assoc t :content
+      (reduce
+      (fn [c i]
+        (l/document
+          (l/parse c)
+          (l/id= i)
+          (l/replace (build-component i))))
+      (:content t)
+      (seq comp-ids)))))
