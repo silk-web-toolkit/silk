@@ -1,9 +1,9 @@
-(defproject silk "0.2.0-beta.2"
+(defproject silk "0.2.0"
   :description "Silk static and dynamic publishing toolkit."
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.5.1"]
-                 [com.taoensso/timbre "1.3.0"]
+                 [com.taoensso/timbre "1.5.2"]
                  [pathetic "0.4.0"]
-                 [me.raynes/laser "0.1.22"]]
+                 [me.raynes/laser "1.1.1"]]
 
   :aot :all)
