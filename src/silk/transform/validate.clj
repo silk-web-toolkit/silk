@@ -48,7 +48,7 @@
     m
     (let [fn-val (fn c (:seed-data m))]
       (cond
-        (empty? (last fn-val)) (assoc m :tx-eligibility-precog :valid)
+        (empty? (last fn-val)) (assoc m :tx-eligibility-precog :valid :seed-data (first fn-val))
         (empty? (first fn-val)) m
         (and (> (count (first fn-val)) 0) (> (count (last fn-val)) 0))
           (assoc m :tx-eligibility-precog :partially-valid
