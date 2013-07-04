@@ -12,7 +12,7 @@
 
 (defn- build-component
   [i]
-  (let [comp-str (str ((split i #":") 1) ".html")
+  (let [comp-str (str i ".html")
         lcp (str se/pwd se/fs "components" se/fs comp-str)
         c-path (if (.exists (file lcp)) (file lcp) (sf/component comp-str))
         parsed-comp (l/parse c-path)]
@@ -21,14 +21,14 @@
 
 (defn process-components
   [t]
-  (let [comps (l/select (l/parse (:content t)) (l/re-id #"silk-component"))
-        comp-ids (map #(:id (:attrs %)) comps)]
+  (let [comps (l/select (l/parse (:content t)) (l/attr? "data-swt-component"))
+        comp-ids (map #(:data-swt-component (:attrs %)) comps)]
     (assoc t :content
       (reduce
       (fn [c i]
         (l/document
           (l/parse c)
-          (l/id= i)
+          (l/attr= "data-swt-component" i)
           (l/replace (build-component i))))
       (:content t)
       (seq comp-ids)))))
