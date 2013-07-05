@@ -7,7 +7,12 @@
 
 (defn- file-2-map
   [f]
-  {:last-modified (.lastModified f) :name (.getName f) :path (.getPath f)})
+  {:last-modified (.lastModified f)
+   :name (.getName f)
+   :path (.getPath f)
+   :is-directory (.isDirectory f)
+   :is-file (.isFile f)
+   :is-hidden (.isHidden f)})
 
 (defn runtime-template
   "Return a runtime Silk template from the runtime silk template directory given a
@@ -37,4 +42,4 @@
   "Get directory metadata under the 'data' directory given a directory d.
    Useful in cases where we do not intend to do anything with file contents."
   [d]
-  (map #(file-2-map %) (rrest (file-seq (file (str se/data-path))))))
+  (if (nil? d) '() (map #(file-2-map %) (rest (file-seq (file (str se/data-path se/fs d)))))))
