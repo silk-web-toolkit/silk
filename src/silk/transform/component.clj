@@ -25,16 +25,11 @@
         data (sf/get-data-meta source)]
     data))
 
-(defn ins-foo
+(defn rins-foo
   [data]
   (fn [node]
     (let [attr (keyword (:data-swt-rtext (:attrs node)))]
-      (assoc node :content [(attr (first data))]))))
-
-(defn- do-inserts
-  [data]
-  #(for [datum (vec data)]
-     (-> % (assoc :content [((:data-swt-rtext :attrs) datum)]))))
+      (map #(assoc node :content [(attr %)]) data))))
 
 (defn- build-component
   [comp-params]
@@ -45,8 +40,7 @@
     ;; parse repeatable components (eat lists)
     (l/parse (l/to-html
               (l/at (first markup)
-                    (l/attr? "data-swt-r") (ins-foo data);;(do-inserts data)
-                    )))
+                    (l/attr? "data-swt-r") (rins-foo data))))
     ;; parse singleton components (eat map entries)
 
     ))
