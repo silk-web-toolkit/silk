@@ -10,6 +10,7 @@
   {:last-modified (.lastModified f)
    :name (.getName f)
    :path (.getPath f)
+   :type (if (.isDirectory f) "directory" "file")
    :is-directory (.isDirectory f)
    :is-file (.isFile f)
    :is-hidden (.isHidden f)})

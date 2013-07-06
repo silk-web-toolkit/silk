@@ -3,7 +3,8 @@
   (:require [clojure.java.io :refer [file]]
             [me.raynes.laser :as l]
             [silk.input.env :as se]
-            [silk.input.file :as sf])
+            [silk.input.file :as sf]
+            [clojure.walk :as walk])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -25,11 +26,27 @@
         data (sf/get-data-meta source)]
     data))
 
-(defn rins-foo
+(defn keys? [m keys]
+  (apply = (map count [keys (select-keys m keys)])))
+
+(defn- transcend
+  [node datum]
+  (let [attr (keyword (:data-swt-rtext (:attrs node)))]
+    (assoc node :content [(attr datum)])))
+
+(defn- eval-element
+  [node datum]
+  (if (and (= :element (:type node)) (keys? (:attrs node) [:data-swt-rtext]))
+    (transcend node datum)
+    node))
+
+(defn- repeated-transform
+  [node datum]
+  (walk/postwalk #(eval-element % datum) node))
+
+(defn repeat-component
   [data]
-  (fn [node]
-    (let [attr (keyword (:data-swt-rtext (:attrs node)))]
-      (map #(assoc node :content [(attr %)]) data))))
+  (fn [node] (map #(repeated-transform node %) data)))
 
 (defn- build-component
   [comp-params]
@@ -40,7 +57,7 @@
     ;; parse repeatable components (eat lists)
     (l/parse (l/to-html
               (l/at (first markup)
-                    (l/attr? "data-swt-r") (rins-foo data))))
+                    (l/attr? "data-swt-r") (repeat-component data))))
     ;; parse singleton components (eat map entries)
 
     ))
