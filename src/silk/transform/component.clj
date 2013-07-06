@@ -22,7 +22,7 @@
 
 (defn- get-component-datasource
   [data-params]
-  (let [source (:data-swt-source data-params)
+  (let [source (:data-sw-source data-params)
         data (sf/get-data-meta source)]
     data))
 
@@ -31,12 +31,12 @@
 
 (defn- transcend
   [node datum]
-  (let [attr (keyword (:data-swt-rtext (:attrs node)))]
+  (let [attr (keyword (:data-sw-rtext (:attrs node)))]
     (assoc node :content [(attr datum)])))
 
 (defn- eval-element
   [node datum]
-  (if (and (= :element (:type node)) (keys? (:attrs node) [:data-swt-rtext]))
+  (if (and (= :element (:type node)) (keys? (:attrs node) [:data-sw-rtext]))
     (transcend node datum)
     node))
 
@@ -50,28 +50,28 @@
 
 (defn- build-component
   [comp-params]
-  (let [path (:data-swt-component comp-params)
+  (let [path (:data-sw-component comp-params)
         raw-markup (l/parse-fragment (get-component-markup path))
         markup (filter #(= (type (first %)) clojure.lang.PersistentArrayMap) raw-markup)
         data (get-component-datasource comp-params)]
     ;; parse repeatable components (eat lists)
     (l/parse (l/to-html
               (l/at (first markup)
-                    (l/attr? "data-swt-r") (repeat-component data))))
+                    (l/attr? "data-sw-r") (repeat-component data))))
     ;; parse singleton components (eat map entries)
 
     ))
 
 (defn process-components
   [t]
-  (let [comps (l/select (l/parse (:content t)) (l/attr? "data-swt-component"))
-        comp-ids (map #(select-keys (:attrs %) [:data-swt-component :data-swt-source]) comps)]
+  (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))
+        comp-ids (map #(select-keys (:attrs %) [:data-sw-component :data-sw-source]) comps)]
     (assoc t :content
       (reduce
       (fn [c i]
         (l/document
           (l/parse c)
-          (l/attr= "data-swt-component" (:data-swt-component i))
+          (l/attr= "data-sw-component" (:data-sw-component i))
           (l/replace (build-component i))))
       (:content t)
       (seq comp-ids)))))
