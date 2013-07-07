@@ -4,7 +4,8 @@
             [me.raynes.laser :as l]
             [silk.input.env :as se]
             [silk.input.file :as sf]
-            [clojure.walk :as walk])
+            [clojure.walk :as walk]
+            [clojure.edn :as edn])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -29,17 +30,31 @@
 (defn- keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
 
+(defn- enhance-datum-content
+  [datum]
+  (assoc datum :content (edn/read-string (slurp (:path datum)))))
+
+(defn- datum-extract
+  "Determine if the data item we want is in the datum, if not try supplementing
+   by loading edn file content."
+  [datum item]
+  (or (item datum) (item (:content (enhance-datum-content datum)))))
+
 (defn- text-write
   [node datum]
   (let [attr (keyword (:data-sw-rtext (:attrs node)))]
-    (assoc node :content [(attr datum)])))
+    (if-let [result (datum-extract datum attr)]
+      (assoc node :content [result])
+      node)))
 
 ;; todo: final param is a result of proto code (POC)
 (defn- attr-write
   [node datum dattr attr]
   (let [val (keyword (dattr (:attrs node)))]
     (if (contains? (:attrs node) attr)
-      (assoc-in node [:attrs attr] (val datum))
+      (if-let [result (datum-extract datum val)]
+        (assoc-in node [:attrs attr] result)
+        node)
       node)))
 
 ;; todo: very proto code (POC)
@@ -48,8 +63,9 @@
   (let [text-ins (text-write node datum)
         text-href (attr-write text-ins datum :data-sw-rhref :href)
         text-src (attr-write text-href datum :data-sw-rsrc :src)
-        text-class (attr-write text-src datum :data-sw-rclass :class)]
-    text-class))
+        text-class (attr-write text-src datum :data-sw-rclass :class)
+        text-title (attr-write text-class datum :data-sw-rtitle :title)]
+    text-title))
 
 (defn- eval-element
   [node datum]
