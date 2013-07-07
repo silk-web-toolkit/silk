@@ -26,7 +26,7 @@
         data (sf/get-data-meta source)]
     data))
 
-(defn keys? [m keys]
+(defn- keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
 
 (defn- transcend
@@ -44,7 +44,7 @@
   [node datum]
   (walk/postwalk #(eval-element % datum) node))
 
-(defn repeat-component
+(defn- repeat-component
   [data]
   (fn [node] (map #(repeated-transform node %) data)))
 
