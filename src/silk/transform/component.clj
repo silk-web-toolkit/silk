@@ -29,10 +29,27 @@
 (defn- keys? [m keys]
   (apply = (map count [keys (select-keys m keys)])))
 
-(defn- transcend
+(defn- text-write
   [node datum]
   (let [attr (keyword (:data-sw-rtext (:attrs node)))]
     (assoc node :content [(attr datum)])))
+
+;; todo: final param is a result of proto code (POC)
+(defn- attr-write
+  [node datum dattr attr]
+  (let [val (keyword (dattr (:attrs node)))]
+    (if (contains? (:attrs node) attr)
+      (assoc-in node [:attrs attr] (val datum))
+      node)))
+
+;; todo: very proto code (POC)
+(defn- transcend
+  [node datum]
+  (let [text-ins (text-write node datum)
+        text-href (attr-write text-ins datum :data-sw-rhref :href)
+        text-src (attr-write text-href datum :data-sw-rsrc :src)
+        text-class (attr-write text-src datum :data-sw-rclass :class)]
+    text-class))
 
 (defn- eval-element
   [node datum]
