@@ -44,5 +44,6 @@
    Useful in cases where we do not intend to do anything with file contents."
   [d]
   (let [raw-file
-        (if (nil? d) '() (file-seq (file (str se/data-path se/fs d))))]
-    (map #(file-2-map %) (if (> 1 (count raw-file))(rest raw-file) raw-file))))
+        (if (nil? d) '() (file-seq (file (str se/data-path se/fs d))))
+        artifact (if (> (count raw-file) 1) (rest raw-file) raw-file)]
+    (map #(file-2-map %) artifact)))
