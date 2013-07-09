@@ -41,8 +41,8 @@
   (or (item datum) (item (:content (enhance-datum-content datum)))))
 
 (defn- text-write
-  [node datum]
-  (let [attr (keyword (:data-sw-rtext (:attrs node)))]
+  [node datum attrib]
+  (let [attr (keyword (attrib (:attrs node)))]
     (if-let [result (datum-extract datum attr)]
       (assoc node :content [result])
       node)))
@@ -60,7 +60,7 @@
 ;; todo: very proto code (POC)
 (defn- transcend
   [node datum]
-  (let [text-ins (text-write node datum)
+  (let [text-ins (text-write node datum :data-sw-rtext)
         text-href (attr-write text-ins datum :data-sw-rhref :href)
         text-src (attr-write text-href datum :data-sw-rsrc :src)
         text-class (attr-write text-src datum :data-sw-rclass :class)
@@ -81,19 +81,21 @@
   [data]
   (fn [node] (map #(repeated-transform node %) data)))
 
+(defn- single-component
+  [data]
+  (fn [node]
+    (text-write node (first data) :data-sw-text)))
+
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
         raw-markup (l/parse-fragment (get-component-markup path))
         markup (filter #(= (type (first %)) clojure.lang.PersistentArrayMap) raw-markup)
         data (get-component-datasource comp-params)]
-    ;; parse repeatable components (eat lists)
     (l/parse (l/to-html
               (l/at (first markup)
-                    (l/attr? "data-sw-r") (repeat-component data))))
-    ;; parse singleton components (eat map entries)
-
-    ))
+                    (l/attr? "data-sw-r") (repeat-component data)
+                    (l/attr? "data-sw-text") (single-component data))))))
 
 (defn process-components
   [t]

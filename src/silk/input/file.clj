@@ -43,4 +43,6 @@
   "Get directory metadata under the 'data' directory given a directory d.
    Useful in cases where we do not intend to do anything with file contents."
   [d]
-  (if (nil? d) '() (map #(file-2-map %) (rest (file-seq (file (str se/data-path se/fs d)))))))
+  (let [raw-file
+        (if (nil? d) '() (file-seq (file (str se/data-path se/fs d))))]
+    (map #(file-2-map %) (if (> 1 (count raw-file))(rest raw-file) raw-file))))
