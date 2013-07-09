@@ -4,5 +4,6 @@
 /target
 .DS_Store
 *.jar
+.lein-repl-history
 .lein-deps-sum
 pom.xml
