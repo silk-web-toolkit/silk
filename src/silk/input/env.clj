@@ -38,5 +38,5 @@
 
 (defonce data-path
   (get (System/getenv)
-       "SILK_DATA_PATH"
-       (str pwd fs "data" fs)))
+    "SILK_DATA_PATH"
+    (str pwd fs "data" fs)))
