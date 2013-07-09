@@ -12,6 +12,11 @@
 ;; Component transformations, see namespace comment
 ;; =============================================================================
 
+(defn- get-dynamic-attribs
+    []
+    [:data-sw-rtext :data-sw-rhref :data-sw-rclass :data-sw-rsrc :data-sw-rtitle])
+
+
 (defn- get-component-markup
   [path]
   (let [comp-str (str path ".html")
@@ -42,10 +47,11 @@
 
 (defn- text-write
   [node datum attrib]
-  (let [attr (keyword (attrib (:attrs node)))]
+  (if-let [attr (keyword (attrib (:attrs node)))]
     (if-let [result (datum-extract datum attr)]
       (assoc node :content [result])
-      node)))
+      node)
+    node))
 
 ;; todo: final param is a result of proto code (POC)
 (defn- attr-write
@@ -69,7 +75,7 @@
 
 (defn- eval-element
   [node datum]
-  (if (and (= :element (:type node)) (keys? (:attrs node) [:data-sw-rtext]))
+  (if (seq (filter (set (keys (:attrs node))) (get-dynamic-attribs)))
     (transcend node datum)
     node))
 
