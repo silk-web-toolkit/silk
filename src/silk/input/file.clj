@@ -3,7 +3,9 @@
   (:require [clojure.java.io :refer [file]]
             [silk.input.env :as se]))
 
-(def rrest (comp rest rest))
+;; =============================================================================
+;; Helper functions
+;; =============================================================================
 
 (defn- file-2-map
   [f]
@@ -14,6 +16,11 @@
    :is-directory (.isDirectory f)
    :is-file (.isFile f)
    :is-hidden (.isHidden f)})
+
+
+;; =============================================================================
+;; File based input, see namespace comment
+;; =============================================================================
 
 (defn runtime-template
   "Return a runtime Silk template from the runtime silk template directory given a

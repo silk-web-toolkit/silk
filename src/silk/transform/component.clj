@@ -9,12 +9,12 @@
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
-;; Component transformations, see namespace comment
+;; Helper functions
 ;; =============================================================================
 
 (defn- get-dynamic-attribs
-    []
-    [:data-sw-rtext :data-sw-rhref :data-sw-rclass :data-sw-rsrc :data-sw-rtitle])
+  []
+  [:data-sw-rtext :data-sw-rhref :data-sw-rclass :data-sw-rsrc :data-sw-rtitle])
 
 
 (defn- get-component-markup
@@ -31,9 +31,6 @@
   (let [source (:data-sw-source data-params)
         data (sf/get-data-meta source)]
     data))
-
-(defn- keys? [m keys]
-  (apply = (map count [keys (select-keys m keys)])))
 
 (defn- enhance-datum-content
   [datum]
@@ -104,6 +101,11 @@
                       (l/attr? "data-sw-r") (repeat-component data)
                       (l/attr? "data-sw-text") (single-component data))))
       (first markup))))
+
+
+;; =============================================================================
+;; Component transformations, see namespace comment
+;; =============================================================================
 
 (defn process-components
   [t]

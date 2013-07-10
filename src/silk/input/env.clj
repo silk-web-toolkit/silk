@@ -3,6 +3,10 @@
   (:require [clojure.java.io :refer [file]])
   (:import java.io.File))
 
+;; =============================================================================
+;; Environmental properties, see namespace comment
+;; =============================================================================
+
 (defonce pwd (. (file ".") getCanonicalPath))
 
 (defonce user-home (System/getProperty (str "user.home")))
