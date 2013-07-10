@@ -98,10 +98,12 @@
         raw-markup (l/parse-fragment (get-component-markup path))
         markup (filter #(= (type (first %)) clojure.lang.PersistentArrayMap) raw-markup)
         data (get-component-datasource comp-params)]
-    (l/parse (l/to-html
-              (l/at (first markup)
-                    (l/attr? "data-sw-r") (repeat-component data)
-                    (l/attr? "data-sw-text") (single-component data))))))
+    (if (seq data)
+      (l/parse (l/to-html
+                (l/at (first markup)
+                      (l/attr? "data-sw-r") (repeat-component data)
+                      (l/attr? "data-sw-text") (single-component data))))
+      (first markup))))
 
 (defn process-components
   [t]
