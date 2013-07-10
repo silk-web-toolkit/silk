@@ -7,6 +7,13 @@
 ;; Helper functions
 ;; =============================================================================
 
+(defn system-root-resource
+  [rel-path system-root]
+  (let [sep (if (re-find #"indow" se/os) "\\\\" se/fs)
+        path (str system-root sep (.replaceAll rel-path "/" sep))]
+    (file path)))
+
+
 (defn- file-2-map
   [f]
   {:last-modified (.lastModified f)
@@ -35,22 +42,23 @@
   [f]
   (file (str se/templates-path f)))
 
-(defn component
-  "Return a Silk component from the silk components directory given a filename f.
-  A Silk component is raw markup."
-  [f]
-  (let [os (System/getProperty "os.name")
-        sep (if (re-find #"indow" os) "\\\\" se/fs)
-        lv (str se/components-path sep (.replaceAll f "/" sep))]
-  (file lv)))
+(defn quantum-resource
+  "Return a Silk resource which may be in one of two places given a path.
+   Initially component or datasource.  Both return a File.
+   Typically used to source artifacts from either a local silk project directory,
+   or an env var root."
+  [rel-path local-root system-root]
+  (let [local-res-path (str se/pwd se/fs local-root se/fs rel-path)
+        local-file (file local-res-path)]
+    (if (.exists local-file) local-file (system-root-resource rel-path system-root))))
 
 (defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
 
 (defn get-data-meta
   "Get directory metadata under the 'data' directory given a directory d.
    Useful in cases where we do not intend to do anything with file contents."
-  [d]
+  [res]
   (let [raw-file
-        (if (nil? d) '() (file-seq (file (str se/data-path se/fs d))))
+        (if (nil? res) '() (file-seq res))
         artifact (if (> (count raw-file) 1) (rest raw-file) raw-file)]
     (map #(file-2-map %) artifact)))

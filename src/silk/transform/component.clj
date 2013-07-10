@@ -19,18 +19,16 @@
 
 (defn- get-component-markup
   [path]
-  (let [comp-str (str path ".html")
-        lcp (str se/pwd se/fs "components" se/fs comp-str)
-        c-path (if (.exists (file lcp)) (file lcp) (sf/component comp-str))
-        parsed-comp (l/parse c-path)]
-    (l/select parsed-comp
+  (let [source (str path ".html")
+        res (sf/quantum-resource source "components" se/components-path)]
+    (l/select (l/parse res)
               (l/child-of (l/element= :body) (l/any)))))
 
 (defn- get-component-datasource
   [data-params]
   (let [source (:data-sw-source data-params)
-        data (sf/get-data-meta source)]
-    data))
+        res (sf/quantum-resource source "data" se/data-path)]
+    (sf/get-data-meta res)))
 
 (defn- enhance-datum-content
   [datum]

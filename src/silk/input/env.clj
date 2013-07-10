@@ -7,6 +7,8 @@
 ;; Environmental properties, see namespace comment
 ;; =============================================================================
 
+(defonce os (System/getProperty "os.name"))
+
 (defonce pwd (. (file ".") getCanonicalPath))
 
 (defonce user-home (System/getProperty (str "user.home")))
@@ -25,10 +27,7 @@
     "SILK_TEMPLATES_PATH"
     (str pwd fs "template" fs)))
 
-(defonce components-path
-  (get (System/getenv)
-    "SILK_COMPONENTS_PATH"
-    (str silk-home fs "repositories" fs "components")))
+(defonce components-path (System/getenv "SILK_COMPONENTS_PATH"))
 
 (defonce views-path
   (get (System/getenv)
@@ -40,7 +39,4 @@
     "SILK_SITE_PATH"
     (str pwd fs "site" fs)))
 
-(defonce data-path
-  (get (System/getenv)
-    "SILK_DATA_PATH"
-    (str pwd fs "data" fs)))
+(defonce data-path (System/getenv "SILK_DATA_PATH"))
