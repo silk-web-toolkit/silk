@@ -24,12 +24,12 @@
     {:path (sp/relativise-> se/views-path (.getPath v))
      :content (l/document
                 (l/parse template)
-                (l/id="silk-view")
+                (l/attr? "data-sw-view")
                   (l/replace
                     (l/select parsed-view
                       (l/child-of (l/element= :body) (l/any))))
                 (l/element= :body)
-                  (l/add-class 
+                  (l/add-class
                     (or
                       (:content (:attrs (first meta-template)))
                       "default"))
