@@ -11,12 +11,27 @@
 
 (defonce silk-home (str user-home fs ".silk"))
 
+(defonce runtime-templates-path
+  (get (System/getenv)
+    "SILK_RUNTIME_TEMPLATES_PATH" 
+    (str pwd fs "silk" fs "site" fs)))
+
 (defonce templates-path
   (get (System/getenv)
-    "SILK_TEMPLATES_PATH" 
-    (str pwd fs "silk" fs "site" fs)))
+    "SILK_TEMPLATES_PATH"
+    (str pwd fs "template" fs)))
 
 (defonce components-path
   (get (System/getenv)
     "SILK_COMPONENTS_PATH" 
-    (str silk-home fs "repositories" fs "components" fs)))
+    (str silk-home fs "repositories" fs "components")))
+
+(defonce views-path
+  (get (System/getenv)
+    "SILK_VIEWS_PATH"
+    (str pwd fs "view" fs)))
+
+(defonce site-path
+  (get (System/getenv)
+    "SILK_SITE_PATH"
+    (str pwd fs "site" fs)))

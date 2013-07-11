@@ -3,14 +3,26 @@
   (:require [clojure.java.io :refer [file]]
             [silk.input.env :as se]))
 
-(defn template 
-  "Return a Silk template from the silk template directory given a filename f.
-   A Silk template is the result of a Silk spin process."
+(defn runtime-template 
+  "Return a runtime Silk template from the runtime silk template directory given a 
+   filename f.
+   A runtime Silk template is the result of a Silk spin process."
   [f] 
+  (file (str se/runtime-templates-path f)))
+
+(defn template
+  "Return a Silk template template from the silk template directory given a filename f.
+   A Silk template is raw markup."
+  [f]
   (file (str se/templates-path f)))
 
 (defn component
   "Return a Silk component from the silk components directory given a filename f.
-  A Silk component is a raw Silk component."
+  A Silk component is raw markup."
   [f]
-  (file (str se/components-path f)))
+  (let [os (System/getProperty "os.name")
+        sep (if (re-find #"indow" os) "\\\\" se/fs)
+        lv (str se/components-path sep (.replaceAll f "/" sep))]
+  (file lv)))
+
+(defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
