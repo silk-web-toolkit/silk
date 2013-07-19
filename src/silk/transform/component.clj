@@ -28,7 +28,9 @@
   [data-params]
   (let [source (:data-sw-source data-params)
         res (sf/quantum-resource source "data" se/data-path)]
-    (sf/get-data-meta res)))
+    (if-let [sort (:data-sw-sort data-params)]
+      (reverse (sort-by (keyword sort) (sf/get-data-meta res)))
+      (sf/get-data-meta res))))
 
 (defn- enhance-datum-content
   [datum]
@@ -108,7 +110,7 @@
 (defn process-components
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))
-        comp-ids (map #(select-keys (:attrs %) [:data-sw-component :data-sw-source]) comps)]
+        comp-ids (map #(select-keys (:attrs %) [:data-sw-component :data-sw-source :data-sw-sort]) comps)]
     (assoc t :content
       (reduce
       (fn [c i]
