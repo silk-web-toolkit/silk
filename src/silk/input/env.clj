@@ -15,7 +15,10 @@
 
 (defonce fs (File/separator))
 
-(defonce silk-home (str user-home fs ".silk"))
+(defonce silk-home 
+  (get (System/getenv)
+    "SILK_PATH"
+    (str user-home fs ".silk")))
 
 (defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
 
@@ -29,7 +32,7 @@
     "SILK_TEMPLATES_PATH"
     (str pwd fs "template" fs)))
 
-(defonce components-path (System/getenv "SILK_COMPONENTS_PATH"))
+(defonce components-path (str silk-home fs "components"))
 
 (defonce views-path
   (get (System/getenv)
@@ -41,4 +44,4 @@
     "SILK_SITE_PATH"
     (str pwd fs "site" fs)))
 
-(defonce data-path (System/getenv "SILK_DATA_PATH"))
+(defonce data-path (str silk-home fs "data"))
