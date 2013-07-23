@@ -11,6 +11,8 @@
 
 (defonce silk-home (str user-home fs ".silk"))
 
+(defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
+
 (defonce runtime-templates-path
   (get (System/getenv)
     "SILK_RUNTIME_TEMPLATES_PATH" 
