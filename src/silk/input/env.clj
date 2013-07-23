@@ -12,7 +12,7 @@
 (defonce silk-home 
   (get (System/getenv)
     "SILK_PATH"
-    (str user-home fs ".silk"))
+    (str user-home fs ".silk")))
 
 (defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
 
