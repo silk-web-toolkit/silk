@@ -27,11 +27,12 @@
 
 (defn- get-component-datasource
   [data-params]
-  (let [source (:data-sw-source data-params)
-        res (sf/quantum-resource source "data" se/data-path)]
-    (if-let [sort (:data-sw-sort data-params)]
-      (reverse (sort-by (keyword sort) (sf/get-data-meta res)))
-      (sf/get-data-meta res))))
+  (if-let [source (:data-sw-source data-params)]
+    (let [res (sf/quantum-resource source "data" se/data-path)]
+      (if-let [sort (:data-sw-sort data-params)]
+        (reverse (sort-by (keyword sort) (sf/get-data-meta res)))
+        (sf/get-data-meta res)))
+    '()))
 
 (defn- enhance-datum-content
   [datum]
@@ -91,6 +92,7 @@
     (text-write node (first data) :data-sw-text)))
 
 ;; todo: handle singular attribute writing - very proto code (POC)
+;; todo: only handles two types of repeating element; tr and li - very proto code (POC)
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
@@ -100,7 +102,7 @@
     (if (seq data)
       (l/parse (l/to-html
                 (l/at (first markup)
-                      (l/attr? "data-sw-r") (repeat-component data)
+                      (l/or (l/element= :tr) (l/element= :li)) (repeat-component data)
                       (l/and
                        (l/negate (l/descendant-of (l/element= :tr) (l/attr? "data-sw-text")))
                        (l/negate (l/descendant-of (l/element= :li) (l/attr? "data-sw-text")))
