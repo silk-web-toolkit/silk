@@ -12,9 +12,10 @@
 ;; Helper functions
 ;; =============================================================================
 
+;; TODO: very proto code (POC)
 (defn- get-dynamic-attribs
   []
-  [:data-sw-rtext :data-sw-rhref :data-sw-rclass :data-sw-rsrc :data-sw-rtitle])
+  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title])
 
 
 (defn- get-component-markup
@@ -63,11 +64,11 @@
 ;; todo: very proto code (POC)
 (defn- transcend
   [node datum]
-  (let [text-ins (text-write node datum :data-sw-rtext)
-        text-href (attr-write text-ins datum :data-sw-rhref :href)
-        text-src (attr-write text-href datum :data-sw-rsrc :src)
-        text-class (attr-write text-src datum :data-sw-rclass :class)
-        text-title (attr-write text-class datum :data-sw-rtitle :title)]
+  (let [text-ins (text-write node datum :data-sw-text)
+        text-href (attr-write text-ins datum :data-sw-href :href)
+        text-src (attr-write text-href datum :data-sw-src :src)
+        text-class (attr-write text-src datum :data-sw-class :class)
+        text-title (attr-write text-class datum :data-sw-title :title)]
     text-title))
 
 (defn- eval-element
@@ -89,6 +90,7 @@
   (fn [node]
     (text-write node (first data) :data-sw-text)))
 
+;; todo: handle singular attribute writing - very proto code (POC)
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
@@ -99,7 +101,10 @@
       (l/parse (l/to-html
                 (l/at (first markup)
                       (l/attr? "data-sw-r") (repeat-component data)
-                      (l/attr? "data-sw-text") (single-component data))))
+                      (l/and
+                       (l/negate (l/descendant-of (l/element= :tr) (l/attr? "data-sw-text")))
+                       (l/negate (l/descendant-of (l/element= :li) (l/attr? "data-sw-text")))
+                       (l/attr? "data-sw-text")) (single-component data))))
       (first markup))))
 
 
