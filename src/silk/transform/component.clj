@@ -113,9 +113,9 @@
 (defn- swap-component->
   [c i]
   (l/document
-          (l/parse c)
-          (l/attr= "data-sw-component" (:data-sw-component i))
-          (l/replace (build-component i))))
+   (l/parse c)
+   (l/attr= "data-sw-component" (:data-sw-component i))
+   (l/replace (build-component i))))
 
 
 ;; =============================================================================
