@@ -22,7 +22,6 @@
   []
   [:data-sw-component :data-sw-source :data-sw-sort])
 
-
 (defn- get-component-markup
   [path]
   (let [source (str path ".html")
