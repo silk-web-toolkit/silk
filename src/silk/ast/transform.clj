@@ -1,27 +1,17 @@
 (ns silk.ast.transform
   "AST transformation."
   (:require [clojure.walk :as walk]
-            [clojure.edn :as edn]
+            [silk.input.data :as dt]
             [silk.ast.describe :as ds]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- enhance-datum-content
-  [datum]
-  (assoc datum :content (edn/read-string (slurp (:path datum)))))
-
-(defn- datum-extract
-  "Determine if the data item we want is in the datum, if not try supplementing
-   by loading edn file content."
-  [datum item]
-  (or (item datum) (item (:content (enhance-datum-content datum)))))
-
 (defn- text-write
   [node datum attrib]
   (if-let [attr (keyword (attrib (:attrs node)))]
-    (if-let [result (datum-extract datum attr)]
+    (if-let [result (dt/datum-extract datum attr)]
       (assoc node :content [result])
       node)
     node))
@@ -31,7 +21,7 @@
   [node datum dattr attr]
   (let [val (keyword (dattr (:attrs node)))]
     (if (contains? (:attrs node) attr)
-      (if-let [result (datum-extract datum val)]
+      (if-let [result (dt/datum-extract datum val)]
         (assoc-in node [:attrs attr] result)
         node)
       node)))
