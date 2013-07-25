@@ -5,22 +5,13 @@
             [silk.input.env :as se]
             [silk.input.file :as sf]
             [silk.ast.select :as sel]
-            [clojure.walk :as walk]
-            [clojure.edn :as edn])
+            [silk.ast.transform :as tx]
+            [silk.ast.describe :as ds])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
-
-;; TODO: very proto code (POC)
-(defn- get-dynamic-attribs
-  []
-  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title])
-
-(defn- get-component-attribs
-  []
-  [:data-sw-component :data-sw-source :data-sw-sort])
 
 (defn- get-component-markup
   [path]
@@ -38,63 +29,6 @@
         (sf/get-data-meta res)))
     '()))
 
-(defn- enhance-datum-content
-  [datum]
-  (assoc datum :content (edn/read-string (slurp (:path datum)))))
-
-(defn- datum-extract
-  "Determine if the data item we want is in the datum, if not try supplementing
-   by loading edn file content."
-  [datum item]
-  (or (item datum) (item (:content (enhance-datum-content datum)))))
-
-(defn- text-write
-  [node datum attrib]
-  (if-let [attr (keyword (attrib (:attrs node)))]
-    (if-let [result (datum-extract datum attr)]
-      (assoc node :content [result])
-      node)
-    node))
-
-;; todo: final param is a result of proto code (POC)
-(defn- attr-write
-  [node datum dattr attr]
-  (let [val (keyword (dattr (:attrs node)))]
-    (if (contains? (:attrs node) attr)
-      (if-let [result (datum-extract datum val)]
-        (assoc-in node [:attrs attr] result)
-        node)
-      node)))
-
-;; todo: very proto code (POC)
-(defn- transcend
-  [node datum]
-  (let [text-ins (text-write node datum :data-sw-text)
-        text-href (attr-write text-ins datum :data-sw-href :href)
-        text-src (attr-write text-href datum :data-sw-src :src)
-        text-class (attr-write text-src datum :data-sw-class :class)
-        text-title (attr-write text-class datum :data-sw-title :title)]
-    text-title))
-
-(defn- eval-element
-  [node datum]
-  (if (seq (filter (set (keys (:attrs node))) (get-dynamic-attribs)))
-    (transcend node datum)
-    node))
-
-(defn- repeated-transform
-  [node datum]
-  (walk/postwalk #(eval-element % datum) node))
-
-(defn- repeat-component
-  [data]
-  (fn [node] (map #(repeated-transform node %) data)))
-
-(defn- single-component
-  [data]
-  (fn [node]
-    (text-write node (first data) :data-sw-text)))
-
 ;; todo: handle singular attribute writing - very proto code (POC)
 ;; todo: only handles two types of repeating element; tr and li - very proto code (POC)
 (defn- build-component
@@ -106,8 +40,8 @@
     (if (seq data)
       (l/parse (l/to-html
                 (l/at (first markup)
-                      (sel/repeating?) (repeat-component data)
-                      (sel/singular?) (single-component data))))
+                      (sel/repeating?) (tx/repeat-component data)
+                      (sel/singular?) (tx/single-component data))))
       (first markup))))
 
 (defn- swap-component->
@@ -125,7 +59,7 @@
 (defn process-components
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))
-        comp-ids (map #(select-keys (:attrs %) (get-component-attribs)) comps)]
+        comp-ids (map #(select-keys (:attrs %) (ds/get-component-attribs)) comps)]
     (assoc
       t
       :content
