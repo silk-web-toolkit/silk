@@ -18,6 +18,10 @@
   []
   [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title])
 
+(defn- get-component-attribs
+  []
+  [:data-sw-component :data-sw-source :data-sw-sort])
+
 
 (defn- get-component-markup
   [path]
@@ -107,6 +111,13 @@
                       (sel/singular?) (single-component data))))
       (first markup))))
 
+(defn- swap-component->
+  [c i]
+  (l/document
+          (l/parse c)
+          (l/attr= "data-sw-component" (:data-sw-component i))
+          (l/replace (build-component i))))
+
 
 ;; =============================================================================
 ;; Component transformations, see namespace comment
@@ -115,13 +126,8 @@
 (defn process-components
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))
-        comp-ids (map #(select-keys (:attrs %) [:data-sw-component :data-sw-source :data-sw-sort]) comps)]
-    (assoc t :content
-      (reduce
-      (fn [c i]
-        (l/document
-          (l/parse c)
-          (l/attr= "data-sw-component" (:data-sw-component i))
-          (l/replace (build-component i))))
-      (:content t)
-      (seq comp-ids)))))
+        comp-ids (map #(select-keys (:attrs %) (get-component-attribs)) comps)]
+    (assoc
+      t
+      :content
+      (reduce #(swap-component-> %1 %2) (:content t) (seq comp-ids)))))
