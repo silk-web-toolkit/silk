@@ -4,6 +4,7 @@
             [me.raynes.laser :as l]
             [silk.input.env :as se]
             [silk.input.file :as sf]
+            [silk.ast.select :as sel]
             [clojure.walk :as walk]
             [clojure.edn :as edn])
   (:use [clojure.string :only [split]]))
@@ -102,11 +103,8 @@
     (if (seq data)
       (l/parse (l/to-html
                 (l/at (first markup)
-                      (l/or (l/element= :tr) (l/element= :li)) (repeat-component data)
-                      (l/and
-                       (l/negate (l/descendant-of (l/element= :tr) (l/attr? "data-sw-text")))
-                       (l/negate (l/descendant-of (l/element= :li) (l/attr? "data-sw-text")))
-                       (l/attr? "data-sw-text")) (single-component data))))
+                      (sel/repeating?) (repeat-component data)
+                      (sel/singular?) (single-component data))))
       (first markup))))
 
 
