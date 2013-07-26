@@ -54,7 +54,12 @@
 (defn single-component
   [data]
   (fn [node]
-    (text-write node (first data) :data-sw-text)))
+    (let [text-ins (text-write node (first data) :data-sw-text)
+          text-href (attr-write text-ins (first data) :data-sw-href :href)
+          text-src (attr-write text-href (first data) :data-sw-src :src)
+          text-class (attr-write text-src (first data) :data-sw-class :class)
+          text-title (attr-write text-class (first data) :data-sw-title :title)]
+      text-title)))
 
 (defn repeat-component
   [data]

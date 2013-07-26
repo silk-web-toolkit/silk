@@ -6,7 +6,12 @@
 (defn writeable?
   "Silk can transform this with data ?"
   []
-  (l/attr? :data-sw-text))
+  (l/or
+   (l/attr? :data-sw-text)
+   (l/attr? :data-sw-href)
+   (l/attr? :data-sw-src)
+   (l/attr? :data-sw-class)
+   (l/attr? :data-sw-title)))
 
 (defn repeat-orphaned?
   "Is not a descendant of a repeating element type ?"
