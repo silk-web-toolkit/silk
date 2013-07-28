@@ -62,7 +62,20 @@
         (if (nil? res) '() (file-seq res))
         artifact (if (> (count raw-file) 1) (rest raw-file) raw-file)]
     (map #(file-2-map %) artifact)))
-    
+
+(defn get-data-directories
+  "Get each of the directories which contain files to process as either:
+     detail files
+     binary assets to be listed in an index page.
+   Assume for now we will only generate detail pages from local data.  Unsure how
+   to resolve shared data... it must not overwrite local etc."
+  []
+  (->> (get-data-meta (file se/pwd "data"))
+     (map #(file (:path %)))
+     (filter #(.isFile %))
+     (map #(.getParent %))
+     distinct))
+
 (defn store-project-dir
   "Writes the current project directory to the central store."
   []
