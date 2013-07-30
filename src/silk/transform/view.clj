@@ -45,7 +45,5 @@
   [{path :path template :template}]
   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
     (for [p path w wrapped]
-      (assoc
-          w
-        :path
-        (sp/relativise-> (str se/pwd se/fs "data" se/fs) (.getPath p))))))
+      (let [rel-p (sp/relativise-> (str se/pwd se/fs "data" se/fs) (.getPath p))]
+        (assoc w :path rel-p)))))
