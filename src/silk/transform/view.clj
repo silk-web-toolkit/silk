@@ -29,7 +29,7 @@
                     (l/select parsed-view
                       (l/child-of (l/element= :body) (l/any))))
                 (l/element= :body)
-                  (l/add-class 
+                  (l/add-class
                     (str "silk-template-" (or
                       (:content (:attrs (first meta-template)))
                       "default")))
@@ -40,3 +40,15 @@
   []
   (let [views (sf/get-views)]
     (map #(view-inject %) views)))
+
+(defn template-wrap-detail->
+  [{path :path template :template}]
+  (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
+    (for [p path w wrapped]
+      (let [rel-p (sp/relativise-> (str se/pwd se/fs "data" se/fs) (.getPath p))
+            data-inj
+            (l/document
+                       (l/parse (:content w))
+                       (l/attr? :data-sw-component)
+                       (l/attr :data-sw-source rel-p))]
+        (assoc w :path rel-p :content data-inj)))))
