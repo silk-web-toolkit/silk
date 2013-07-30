@@ -9,11 +9,22 @@
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
+;; Helper functions
+;; =============================================================================
+
+(defn- template->
+  [c]
+  )
+
+
+
+;; =============================================================================
 ;; Payload transformation functions, see namespace comment
 ;; =============================================================================
 
 (defn- view-inject
   [v]
+  (println (str "v is : " v))
   (let [parsed-view (l/parse v)
         meta-template (l/select parsed-view
                        (l/and (l/element= :meta) (l/attr= :name "template")))
@@ -21,6 +32,7 @@
                    (sf/template
                     (str (:content (:attrs (first meta-template))) ".html"))
                    (sf/template "default.html"))]
+    (println (str "template is : " template))
     {:path (sp/relativise-> se/views-path (.getPath v))
      :content (l/document
                 (l/parse template)
@@ -29,7 +41,7 @@
                     (l/select parsed-view
                       (l/child-of (l/element= :body) (l/any))))
                 (l/element= :body)
-                  (l/add-class 
+                  (l/add-class
                     (str "silk-template-" (or
                       (:content (:attrs (first meta-template)))
                       "default")))
@@ -40,3 +52,8 @@
   []
   (let [views (sf/get-views)]
     (map #(view-inject %) views)))
+
+(defn template-wrap-detail->
+  [payload]
+  (println (str "payload is : " payload))
+  (map #(view-inject %) (take (count (:path payload)) (repeat (:template payload)))))
