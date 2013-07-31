@@ -29,7 +29,6 @@
         (sf/get-data-meta res)))
     '()))
 
-;; todo: handle singular attribute writing - very proto code (POC)
 ;; todo: only handles two types of repeating element; tr and li - very proto code (POC)
 (defn- build-component
   [comp-params]
