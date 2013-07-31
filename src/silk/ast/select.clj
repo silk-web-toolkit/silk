@@ -14,7 +14,7 @@
    (l/attr? :data-sw-title)))
 
 (defn repeat-orphaned?
-  "Is not a descendant of a repeating element type ?"
+  "Is not a descendant of a repeating element type and is a data writeable ?"
   []
   (l/and
     (l/negate (l/descendant-of (l/element= :table) (l/attr? :data-sw-text)))
@@ -25,9 +25,24 @@
   []
   (l/and (writeable?) (repeat-orphaned?)))
 
+(defn repeat-orphaned-permissive?
+  "Is not a descendant of a repeating element type ?"
+  []
+  (l/and
+    (l/negate (l/descendant-of (l/element= :tr) (l/any)))
+    (l/negate (l/descendant-of (l/element= :li) (l/any)))))
+
+(defn repeat-node?
+  []
+  (l/or (l/element= :tr) (l/element= :li)))
+
 (defn repeating?
   []
-  (fn [loc]
-    (or
-     (= :tr (-> loc z/node :tag))
-     (= :li (-> loc z/node :tag)))))
+  (l/and (repeat-orphaned-permissive?) (repeat-node?)))
+
+;; (defn repeating?
+;;   []
+;;   (fn [loc]
+;;     (or
+;;      (= :tr (-> loc z/node :tag))
+;;      (= :li (-> loc z/node :tag)))))
