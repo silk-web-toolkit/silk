@@ -7,6 +7,9 @@
 ;; Selection functions, see namespace comment
 ;; =============================================================================
 
+;; low level selectors - HTML
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defn writeable?
   "Silk can transform this with data ?"
   []
@@ -43,3 +46,11 @@
 (defn repeating?
   []
   (l/and (repeat-orphaned-permissive?) (repeat-node?)))
+
+
+;; high level selectors - Silk domain
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn template
+  [v]
+  (l/select v (l/and (l/element= :meta) (l/attr= :name "template"))))

@@ -5,7 +5,8 @@
             [silk.input.env :as se]
             [silk.input.file :as sf]
             [silk.input.file :as sf]
-            [silk.transform.path :as sp])
+            [silk.transform.path :as sp]
+            [silk.ast.select :as sel])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -15,8 +16,7 @@
 (defn- view-inject
   [v]
   (let [parsed-view (l/parse v)
-        meta-template (l/select parsed-view
-                       (l/and (l/element= :meta) (l/attr= :name "template")))
+        meta-template (sel/template parsed-view)
         template (if-not (nil? (first meta-template))
                    (sf/template
                     (str (:content (:attrs (first meta-template))) ".html"))
