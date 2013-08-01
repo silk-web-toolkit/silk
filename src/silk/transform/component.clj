@@ -33,15 +33,13 @@
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
-        raw-markup (l/parse-fragment (get-component-markup path))
-        markup (filter #(= (type (first %)) clojure.lang.PersistentArrayMap) raw-markup)
+        raw-markup (get-component-markup path)
         data (get-component-datasource comp-params)]
     (if (seq data)
-      (l/parse (l/to-html
-                (l/at (first markup)
-                      (sel/repeating?) (tx/repeat-component data)
-                      (sel/singular?) (tx/single-component data))))
-      (first markup))))
+      (l/fragment (l/parse-fragment raw-markup)
+            (sel/repeating?) (tx/repeat-component data)
+            (sel/singular?) (tx/single-component data))
+      raw-markup)))
 
 (defn- swap-component->
   [c i]
