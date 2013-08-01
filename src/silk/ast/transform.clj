@@ -2,12 +2,25 @@
   "AST transformation."
   (:require [clojure.walk :as walk]
             [me.raynes.laser :as l]
+            [silk.input.env :as se]
+            [silk.transform.path :as sp]
             [silk.input.data :as dt]
             [silk.ast.describe :as ds]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
+
+(defn extension
+  [p]
+  (subs p (+ 1 (.lastIndexOf p "."))))
+
+(defn detail-write
+  [val attr ext]
+  (if (and (= attr :href) (= (extension val) "edn"))
+    (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) val)]
+      (sp/update-extension rel ext))
+    val))
 
 (defn- text-write
   [node datum attrib]
@@ -23,7 +36,7 @@
   (let [val (keyword (dattr (:attrs node)))]
     (if (contains? (:attrs node) attr)
       (if-let [result (dt/datum-extract datum val)]
-        (assoc-in node [:attrs attr] result)
+        (assoc-in node [:attrs attr] (detail-write result attr "html"))
         node)
       node)))
 

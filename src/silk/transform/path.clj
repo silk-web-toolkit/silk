@@ -19,3 +19,8 @@
   "Calculate the difference between a src path and destination path."
   [a b]
   (path/relativize (win2nix-> a) (win2nix-> b)))
+
+(defn update-extension
+  "Update the extension on p to e."
+  [p e]
+  (str (subs p 0 (.lastIndexOf p ".")) "."  e))
