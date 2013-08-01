@@ -54,3 +54,8 @@
 (defn template
   [v]
   (l/select v (l/and (l/element= :meta) (l/attr= :name "template"))))
+
+(defn body-content
+  "Get sequence of children of a body element."
+  [m]
+  (l/select m (l/child-of (l/element= :body) (l/any))))

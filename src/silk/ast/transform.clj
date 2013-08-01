@@ -1,6 +1,7 @@
 (ns silk.ast.transform
   "AST transformation."
   (:require [clojure.walk :as walk]
+            [me.raynes.laser :as l]
             [silk.input.data :as dt]
             [silk.ast.describe :as ds]))
 
@@ -64,3 +65,8 @@
 (defn repeat-component
   [data]
   (fn [node] (map #(repeated-transform node %) data)))
+
+(defn write-template-class
+  [t]
+  (l/add-class
+   (str "silk-template-" (or (:content (:attrs (first t))) "default"))))

@@ -6,35 +6,39 @@
             [silk.input.file :as sf]
             [silk.input.file :as sf]
             [silk.transform.path :as sp]
-            [silk.ast.select :as sel])
+            [silk.ast.select :as sel]
+            [silk.ast.transform :as tx])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
-;; Payload transformation functions, see namespace comment
+;; Helper functions
 ;; =============================================================================
+
+(defn- get-template
+  [t]
+  (if-not (nil? (first t))
+                   (sf/template
+                    (str (:content (:attrs (first t))) ".html"))
+                   (sf/template "default.html")))
 
 (defn- view-inject
   [v]
   (let [parsed-view (l/parse v)
         meta-template (sel/template parsed-view)
-        template (if-not (nil? (first meta-template))
-                   (sf/template
-                    (str (:content (:attrs (first meta-template))) ".html"))
-                   (sf/template "default.html"))]
+        template (get-template meta-template)]
     {:path (sp/relativise-> se/views-path (.getPath v))
      :content (l/document
                 (l/parse template)
                 (l/attr? "data-sw-view")
-                  (l/replace
-                    (l/select parsed-view
-                      (l/child-of (l/element= :body) (l/any))))
-                (l/element= :body)
-                  (l/add-class
-                    (str "silk-template-" (or
-                      (:content (:attrs (first meta-template)))
-                      "default")))
+                  (l/replace (sel/body-content parsed-view))
+                (l/element= :body) (tx/write-template-class meta-template)
                 (l/element= :body)
                   (l/add-class (str "silk-view-" (first (split (.getName v) #"\.")))))}))
+
+
+;; =============================================================================
+;; Payload transformation functions, see namespace comment
+;; =============================================================================
 
 (defn template-wrap->
   []
@@ -48,7 +52,7 @@
       (let [rel-p (sp/relativise-> (str se/pwd se/fs "data" se/fs) (.getPath p))
             data-inj
             (l/document
-                       (l/parse (:content w))
-                       (l/attr? :data-sw-component)
-                       (l/attr :data-sw-source rel-p))]
+             (l/parse (:content w))
+             (l/attr? :data-sw-component)
+             (l/attr :data-sw-source rel-p))]
         (assoc w :path rel-p :content data-inj)))))
