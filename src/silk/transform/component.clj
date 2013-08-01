@@ -17,8 +17,7 @@
   [path]
   (let [source (str path ".html")
         res (sf/quantum-resource source "components" se/components-path)]
-    (l/select (l/parse res)
-              (l/child-of (l/element= :body) (l/any)))))
+    (sel/body-content (l/parse res))))
 
 (defn- get-component-datasource
   [data-params]
