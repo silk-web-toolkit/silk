@@ -39,10 +39,3 @@
 (defn repeating?
   []
   (l/and (repeat-orphaned-permissive?) (repeat-node?)))
-
-;; (defn repeating?
-;;   []
-;;   (fn [loc]
-;;     (or
-;;      (= :tr (-> loc z/node :tag))
-;;      (= :li (-> loc z/node :tag)))))
