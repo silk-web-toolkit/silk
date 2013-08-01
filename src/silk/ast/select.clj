@@ -3,6 +3,10 @@
   (:require [clojure.zip :as z]
             [me.raynes.laser :as l]))
 
+;; =============================================================================
+;; Selection functions, see namespace comment
+;; =============================================================================
+
 (defn writeable?
   "Silk can transform this with data ?"
   []
