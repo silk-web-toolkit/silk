@@ -1,6 +1,7 @@
 (ns silk.transform.component
   "Component related transformations.  "
   (:require [clojure.java.io :refer [file]]
+            [clojure.walk :as walk]
             [me.raynes.laser :as l]
             [silk.input.env :as se]
             [silk.input.file :as sf]
@@ -28,17 +29,54 @@
         (sf/get-data-meta res)))
     '()))
 
+;; fatigued, will abstract this out later :-(
+(defn get-component-datasource-tree
+  [data-params]
+  (if-let [source (:data-sw-source data-params)]
+    (let [res (sf/quantum-resource source "data" se/data-path)]
+      (sf/get-data-meta-tree res))
+    {}))
+
+(defn- transcend-dir
+  [datum]
+  (let [rl {:type :element :tag :li :content [(:name datum)]}
+        cont (if (every? #(= (:tag %) :li) (:content datum))
+               [rl {:type :element :tag :ul :content (:content datum)}]
+               (into [rl] (:content datum)))]
+    (-> datum
+        (assoc :type :element :tag :ul :content cont))))
+
+(defn- transcend-file
+  [datum]
+  (-> datum
+       (assoc :type :element :tag :li)))
+
+(defn- eval-element
+  [datum]
+  (cond
+   (= (:node-type datum) :directory) (transcend-dir datum)
+   (= (:node-type datum) :file) (transcend-file datum)
+    :else datum))
+
+(defn- map-walk
+  [data]
+  (walk/postwalk eval-element data))
+
 ;; todo: only handles two types of repeating element; tr and li - very proto code (POC)
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
-        raw-markup (get-component-markup path)
-        data (get-component-datasource comp-params)]
-    (if (seq data)
-      (l/fragment (l/parse-fragment raw-markup)
-            (sel/repeating?) (tx/repeat-component data)
-            (sel/singular?) (tx/single-component data))
-      raw-markup)))
+        raw-markup (get-component-markup path)]
+    (if-let [tree (:data-sw-type comp-params)]
+      (let [data (get-component-datasource-tree comp-params)
+            walkin (map-walk data)]
+        walkin)
+      (let [data (get-component-datasource comp-params)]
+        (if (seq data)
+          (l/fragment (l/parse-fragment raw-markup)
+                      (sel/repeating?) (tx/repeat-component data)
+                      (sel/singular?) (tx/single-component data))
+          raw-markup)))))
 
 (defn- swap-component->
   [c i]

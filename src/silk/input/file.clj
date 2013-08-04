@@ -1,7 +1,8 @@
 (ns silk.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
-            [silk.input.env :as se]))
+            [silk.input.env :as se])
+  (import java.io.File))
 
 ;; =============================================================================
 ;; Helper functions
@@ -13,7 +14,6 @@
         path (str system-root sep (.replaceAll rel-path "/" sep))]
     (file path)))
 
-
 (defn- file-2-map
   [f]
   {:last-modified (.lastModified f)
@@ -23,6 +23,14 @@
    :is-directory (.isDirectory f)
    :is-file (.isFile f)
    :is-hidden (.isHidden f)})
+
+(defstruct node-st :name :content :node-type)
+
+(defn file-tree
+  [#^File f]
+  (if (.isDirectory f)
+    (struct node-st (.getName f) (vec (map file-tree (.listFiles f))) :directory)
+    (struct node-st (.getName f) [(.getName f)] :file)))
 
 
 ;; =============================================================================
@@ -62,6 +70,11 @@
         (if (nil? res) '() (file-seq res))
         artifact (if (> (count raw-file) 1) (rest raw-file) raw-file)]
     (map #(file-2-map %) artifact)))
+
+(defn get-data-meta-tree
+  "Same as get-data-meta but work with hierarchy."
+  [res]
+  (if (nil? res) {} (file-tree res)))
 
 (defn get-data-directories
   "Get each of the directories which contain files to process as either:
