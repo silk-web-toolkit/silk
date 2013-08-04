@@ -24,13 +24,13 @@
    :is-file (.isFile f)
    :is-hidden (.isHidden f)})
 
-(defstruct node-st :name :content :node-type)
+(defstruct node-st :name :path :content :node-type)
 
 (defn file-tree
   [#^File f]
   (if (.isDirectory f)
-    (struct node-st (.getName f) (vec (map file-tree (.listFiles f))) :directory)
-    (struct node-st (.getName f) [(.getName f)] :file)))
+    (struct node-st (.getName f) (.getPath f) (vec (map file-tree (.listFiles f))) :directory)
+    (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
 
 
 ;; =============================================================================

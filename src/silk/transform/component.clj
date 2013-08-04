@@ -5,6 +5,7 @@
             [me.raynes.laser :as l]
             [silk.input.env :as se]
             [silk.input.file :as sf]
+            [silk.transform.path :as sp]
             [silk.ast.select :as sel]
             [silk.ast.transform :as tx]
             [silk.ast.describe :as ds])
@@ -48,8 +49,11 @@
 
 (defn- transcend-file
   [datum]
-  (-> datum
-       (assoc :type :element :tag :li)))
+  (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) (:path datum))
+        conv-p (sp/update-extension rel "html")
+        cont {:type :element :tag :a :attrs {:href conv-p} :content (:content datum)}
+        mod (assoc datum :type :element :tag :li :content [cont])]
+    mod))
 
 (defn- eval-element
   [datum]
