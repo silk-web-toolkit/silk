@@ -3,7 +3,7 @@
 
 (defn get-component-attribs
   []
-  [:data-sw-component :data-sw-source :data-sw-sort])
+  [:data-sw-component :data-sw-source :data-sw-type :data-sw-sort])
 
 ;; TODO: very proto code (POC)
 (defn get-dynamic-attribs
