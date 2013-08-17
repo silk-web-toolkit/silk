@@ -1,11 +1,11 @@
-(ns silk.ast.transform
+(ns silk.transform.ast
   "AST transformation."
   (:require [clojure.walk :as walk]
             [me.raynes.laser :as l]
             [silk.input.env :as se]
-            [silk.transform.path :as sp]
+            [silk.input.ast :as ds]
             [silk.input.data :as dt]
-            [silk.ast.describe :as ds]))
+            [silk.transform.path :as sp]))
 
 ;; =============================================================================
 ;; Helper functions

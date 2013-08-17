@@ -3,12 +3,11 @@
   (:require [clojure.java.io :refer [file]]
             [clojure.walk :as walk]
             [me.raynes.laser :as l]
+            [silk.input.ast :as ds]
             [silk.input.env :as se]
             [silk.input.file :as sf]
-            [silk.transform.path :as sp]
-            [silk.ast.select :as sel]
-            [silk.ast.transform :as tx]
-            [silk.ast.describe :as ds])
+            [silk.transform.ast :as tx]
+            [silk.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -18,7 +17,7 @@
 (defn- get-component-markup
   [path]
   (let [res (sf/component path)]
-    (sel/body-content (l/parse res))))
+    (ds/body-content (l/parse res))))
 
 (defn- get-component-datasource
   [data-params]
@@ -78,8 +77,8 @@
       (let [data (get-component-datasource comp-params)]
         (if (seq data)
           (l/fragment (l/parse-fragment raw-markup)
-                      (sel/repeating?) (tx/repeat-component data)
-                      (sel/singular?) (tx/single-component data))
+                      (ds/repeating?) (tx/repeat-component data)
+                      (ds/singular?) (tx/single-component data))
           raw-markup)))))
 
 (defn- swap-component->

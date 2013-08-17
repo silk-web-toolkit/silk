@@ -3,11 +3,10 @@
    Principally view driven."
   (:require [me.raynes.laser :as l]
             [silk.input.env :as se]
+            [silk.input.ast :as ds]
             [silk.input.file :as sf]
-            [silk.input.file :as sf]
-            [silk.transform.path :as sp]
-            [silk.ast.select :as sel]
-            [silk.ast.transform :as tx])
+            [silk.transform.ast :as tx]
+            [silk.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -24,13 +23,13 @@
 (defn- view-inject
   [v]
   (let [parsed-view (l/parse v)
-        meta-template (sel/template parsed-view)
+        meta-template (ds/template parsed-view)
         template (get-template meta-template)]
     {:path (sp/relativise-> se/views-path (.getPath v))
      :content (l/document
                 (l/parse template)
                 (l/attr? "data-sw-view")
-                  (l/replace (sel/body-content parsed-view))
+                  (l/replace (ds/body-content parsed-view))
                 (l/element= :body) (tx/write-template-class meta-template)
                 (l/element= :body)
                   (l/add-class (str "silk-view-" (first (split (.getName v) #"\.")))))}))

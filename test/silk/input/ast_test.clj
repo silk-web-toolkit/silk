@@ -1,10 +1,10 @@
-(ns silk.ast.select-test
+(ns silk.input.ast-test
   (:require [clojure.test :refer :all]
             [midje.sweet :refer :all]
             [me.raynes.laser :as l]
             [hickory.core :as hickory]
             [hickory.zip :as hzip]
-            [silk.ast.select :as sel]))
+            [silk.input.ast :as sel]))
 
 ;; =============================================================================
 ;; Helper functions

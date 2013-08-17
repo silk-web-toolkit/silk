@@ -1,10 +1,25 @@
-(ns silk.ast.select
-  "AST selection."
-  (:require [clojure.zip :as z]
-            [me.raynes.laser :as l]))
+(ns silk.input.ast
+  "AST input functions, describes the shape of aspects of the AST and enables
+   selection over them."
+  (:require [me.raynes.laser :as l]))
 
 ;; =============================================================================
-;; Selection functions, see namespace comment
+;; AST domain description functions, see namespace comment
+;; =============================================================================
+
+
+(defn get-component-attribs
+  []
+  [:data-sw-component :data-sw-source :data-sw-type :data-sw-sort])
+
+;; TODO: very proto code (POC)
+(defn get-dynamic-attribs
+  []
+  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title])
+
+
+;; =============================================================================
+;; Selection input functions, see namespace comment
 ;; =============================================================================
 
 ;; low level selectors - HTML
