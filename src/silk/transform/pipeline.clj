@@ -11,6 +11,21 @@
             [silk.transform.path :as sp]))
 
 ;; =============================================================================
+;; Helper functions
+;; =============================================================================
+
+(defn- post-process
+  [payload mode]
+  (->> payload
+       (map #(sc/process-components %))
+       (map #(sc/process-components %))
+       (map #(sel/relativise-attrs :link :href % mode))
+       (map #(sel/relativise-attrs :img :src % mode))
+       (map #(sel/relativise-attrs :script :src % mode))
+       (map #(sel/relativise-attrs :a :href % mode))))
+
+
+;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
 ;; =============================================================================
 
@@ -20,22 +35,10 @@
    and relativisation of uri's.
    mode enables different behaviours across different intended environments."
   [mode]
-  (->> (sv/template-wrap->)
-       (map #(sc/process-components %))
-       (map #(sc/process-components %))
-       (map #(sel/relativise-attrs :link :href % mode))
-       (map #(sel/relativise-attrs :img :src % mode))
-       (map #(sel/relativise-attrs :script :src % mode))
-       (map #(sel/relativise-attrs :a :href % mode))))
+  (post-process (sv/template-wrap->) mode))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk
    content based directory contents."
   [p tpl mode]
-  (->> (sv/template-wrap-detail-> {:path p :template tpl})
-       (map #(sc/process-components %))
-       (map #(sc/process-components %))
-       (map #(sel/relativise-attrs :link :href % mode))
-       (map #(sel/relativise-attrs :img :src % mode))
-       (map #(sel/relativise-attrs :script :src % mode))
-       (map #(sel/relativise-attrs :a :href % mode))))
+  (post-process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
