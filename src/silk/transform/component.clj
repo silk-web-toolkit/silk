@@ -17,8 +17,7 @@
 
 (defn- get-component-markup
   [path]
-  (let [source (str path ".html")
-        res (sf/component source)]
+  (let [res (sf/component path)]
     (sel/body-content (l/parse res))))
 
 (defn- get-component-datasource

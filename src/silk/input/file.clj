@@ -61,12 +61,12 @@
     (if (.exists local-file) local-file (system-root-resource rel-path system-root))))
 
 (defn component
-  [source]
-  (quantum-resource source "components" se/components-path))
+  [path]
+  (quantum-resource (str path ".html") "components" se/components-path))
 
 (defn data
-  [source]
-  (quantum-resource source "data" se/data-path))
+  [path]
+  (quantum-resource path "data" se/data-path))
 
 (defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
 
