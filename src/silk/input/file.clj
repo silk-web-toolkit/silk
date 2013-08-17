@@ -51,14 +51,18 @@
   (file (str se/templates-path f)))
 
 (defn quantum-resource
-  "Return a Silk resource which may be in one of two places given a path.
+  "Return a Silk resource which may be in one of several places given a path.
    Initially component or datasource.  Both return a File.
    Typically used to source artifacts from either a local silk project directory,
-   or an env var root."
+   an env var root or silk home."
   [rel-path local-root system-root]
   (let [local-res-path (str se/pwd se/fs local-root se/fs rel-path)
-        local-file (file local-res-path)]
-    (if (.exists local-file) local-file (system-root-resource rel-path system-root))))
+        local-file (file local-res-path)
+        reserve (system-root-resource rel-path system-root)]
+    (cond
+      (.exists local-file) local-file
+      (.exists reserve) reserve
+      :else (file (str se/silk-home se/fs local-root se/fs rel-path)))))
 
 (defn component
   [path]
