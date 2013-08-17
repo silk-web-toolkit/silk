@@ -32,7 +32,10 @@
     "SILK_TEMPLATES_PATH"
     (str pwd fs "template" fs)))
 
-(defonce components-path (str silk-home fs "components"))
+(defonce components-path
+  (get (System/getenv)
+    "SILK_COMPONENTS_PATH"
+    (str silk-home fs "components")))
 
 (defonce views-path
   (get (System/getenv)

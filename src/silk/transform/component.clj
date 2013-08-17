@@ -18,13 +18,13 @@
 (defn- get-component-markup
   [path]
   (let [source (str path ".html")
-        res (sf/quantum-resource source "components" se/components-path)]
+        res (sf/component source)]
     (sel/body-content (l/parse res))))
 
 (defn- get-component-datasource
   [data-params]
   (if-let [source (:data-sw-source data-params)]
-    (let [res (sf/quantum-resource source "data" se/data-path)]
+    (let [res (sf/data source)]
       (if-let [sort (:data-sw-sort data-params)]
         (reverse (sort-by (keyword sort) (sf/get-data-meta res)))
         (sf/get-data-meta res)))
@@ -34,7 +34,7 @@
 (defn get-component-datasource-tree
   [data-params]
   (if-let [source (:data-sw-source data-params)]
-    (let [res (sf/quantum-resource source "data" se/data-path)]
+    (let [res (sf/data source)]
       (sf/get-data-meta-tree res))
     {}))
 

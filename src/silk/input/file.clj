@@ -60,6 +60,14 @@
         local-file (file local-res-path)]
     (if (.exists local-file) local-file (system-root-resource rel-path system-root))))
 
+(defn component
+  [source]
+  (quantum-resource source "components" se/components-path))
+
+(defn data
+  [source]
+  (quantum-resource source "data" se/data-path))
+
 (defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
 
 (defn get-data-meta
