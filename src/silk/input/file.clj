@@ -1,6 +1,7 @@
 (ns silk.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
+            [me.rossputin.diskops :as do]
             [silk.input.env :as se])
   (import java.io.File))
 
@@ -31,6 +32,8 @@
   (if (.isDirectory f)
     (struct node-st (.getName f) (.getPath f) (vec (map file-tree (.listFiles f))) :directory)
     (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
+
+(defn get-views-raw [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
 
 
 ;; =============================================================================
@@ -72,7 +75,10 @@
   [path]
   (quantum-resource path "data" se/data-path))
 
-(defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
+(defn get-views
+  []
+  (-> (get-views-raw)
+      (do/filter-exts ["html"])))
 
 (defn get-data-meta
   "Get directory metadata under the 'data' directory given a directory d.
