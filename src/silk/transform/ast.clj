@@ -34,7 +34,7 @@
 (defn- attr-write
   [node datum dattr attr]
   (let [val (keyword (dattr (:attrs node)))]
-    (if (contains? (:attrs node) attr)
+    (if (and (contains? (:attrs node) attr) (contains? (:attrs node) dattr))
       (if-let [result (dt/datum-extract datum val)]
         (assoc-in node [:attrs attr] (detail-write result attr "html"))
         node)
