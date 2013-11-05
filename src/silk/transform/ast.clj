@@ -15,7 +15,7 @@
   [p]
   (subs p (+ 1 (.lastIndexOf p "."))))
 
-(defn detail-write
+(defn- detail-write
   [val attr ext]
   (if (and (= attr :href) (= (extension val) "edn"))
     (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) val)]
