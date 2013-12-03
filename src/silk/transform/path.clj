@@ -24,3 +24,7 @@
   "Update the extension on p to e."
   [p e]
   (str (subs p 0 (.lastIndexOf p ".")) "."  e))
+
+(defn extension
+  [p]
+  (subs p (+ 1 (.lastIndexOf p "."))))

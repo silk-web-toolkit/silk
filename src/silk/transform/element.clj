@@ -12,6 +12,8 @@
 ;; Element transformation functions, see namespace comment
 ;; =============================================================================
 
+(def ROOT-EXT #{"css" "js" "png" "gif" "jpg"})
+
 (defn- relativise-attr
   "Relativise an attribute value v using the source of the attributes location
    within a project (view location).
@@ -27,7 +29,9 @@
                      (.getParent (File. se/views-path p))
                      se/views-path)]
             (str rel "/" v))))
-      (if (= m "live") (str "/" v) v))))
+      (if (= m "live") 
+        (if (some #{(sp/extension v)} ROOT-EXT) (str "/" v) v)
+        v))))
 
 (defn relativise-attrs
   "Selects elements for re-writing of attributes.

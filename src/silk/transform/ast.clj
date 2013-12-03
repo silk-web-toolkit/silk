@@ -11,13 +11,9 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn extension
-  [p]
-  (subs p (+ 1 (.lastIndexOf p "."))))
-
 (defn- detail-write
   [val attr ext]
-  (if (and (= attr :href) (= (extension val) "edn"))
+  (if (and (= attr :href) (= (sp/extension val) "edn"))
     (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) val)]
       (sp/update-extension rel ext))
     val))
