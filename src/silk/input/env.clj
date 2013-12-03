@@ -37,14 +37,8 @@
     "SILK_COMPONENTS_PATH"
     (str silk-home fs "components")))
 
-(defonce views-path
-  (get (System/getenv)
-    "SILK_VIEWS_PATH"
-    (str pwd fs "view" fs)))
+(defonce views-path (str pwd fs "view" fs))
 
-(defonce site-path
-  (get (System/getenv)
-    "SILK_SITE_PATH"
-    (str pwd fs "site" fs)))
+(defonce site-path (str pwd fs "site" fs))
 
 (defonce data-path (str silk-home fs "data"))
