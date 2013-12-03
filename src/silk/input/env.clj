@@ -15,17 +15,12 @@
 
 (defonce fs (File/separator))
 
-(defonce silk-home 
+(defonce silk-home
   (get (System/getenv)
     "SILK_PATH"
     (str user-home fs ".silk")))
 
 (defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
-
-(defonce runtime-templates-path
-  (get (System/getenv)
-    "SILK_RUNTIME_TEMPLATES_PATH"
-    (str pwd fs "silk" fs "site" fs)))
 
 (defonce templates-path
   (get (System/getenv)

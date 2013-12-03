@@ -40,13 +40,6 @@
 ;; File based input, see namespace comment
 ;; =============================================================================
 
-(defn runtime-template
-  "Return a runtime Silk template from the runtime silk template directory given a
-   filename f.
-   A runtime Silk template is the result of a Silk spin process."
-  [f]
-  (file (str se/runtime-templates-path f)))
-
 (defn template
   "Return a Silk template template from the silk template directory given a filename f.
    A Silk template is raw markup."
