@@ -15,6 +15,7 @@
 
 (defonce fs (File/separator))
 
+;; used for last spun time and silk project list
 (defonce silk-home
   (get (System/getenv)
     "SILK_PATH"
@@ -22,11 +23,15 @@
 
 (defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
 
+;; configured to work with static spins and server compile time 'page' artefact caching
 (defonce templates-path
   (get (System/getenv)
     "SILK_TEMPLATES_PATH"
     (str pwd fs "template" fs)))
 
+;; used by quantum-resource in static spins to get component and fallback
+;; local/env var/shared
+;; used by server compile time 'component' artefact caching
 (defonce components-path
   (get (System/getenv)
     "SILK_COMPONENTS_PATH"
