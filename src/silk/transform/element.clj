@@ -2,17 +2,30 @@
   "Artifact element transformation, for example attribute rewriting for
    page elements.  Initially mimetype for content is HTML5.  Principally
    we are working with a view driven pipeline."
-   (:require [me.raynes.laser :as l]
-             [pathetic.core :as path]
-             [silk.input.env :as se]
-             [silk.transform.path :as sp])
-   (import java.io.File))
+  (:require [me.raynes.laser :as l]
+            [pathetic.core :as path]
+            [silk.input.env :as se]
+            [silk.transform.path :as sp])
+  (import java.io.File))
 
 ;; =============================================================================
 ;; Element transformation functions, see namespace comment
 ;; =============================================================================
 
 (def ROOT-EXT #{"css" "js" "png" "gif" "jpg"})
+
+(defn- external-uri?
+  "determine if asset is pointed to by external uri"
+  [asset]
+  (some #{"http:" "https:" "mailto:"} (path/parse-path asset)))
+
+(defn- valid-asset?
+  "is asset relative and of the correct type"
+  [asset]
+  (and (some #{(sp/extension asset)} ROOT-EXT)
+       (not (.startsWith asset "/"))
+       (not (external-uri? asset))))
+
 
 (defn- relativise-attr
   "Relativise an attribute value v using the source of the attributes location
@@ -21,16 +34,13 @@
   [v p m]
   (let [vp (.getParent (File. p))]
     (if-not (nil? vp)
-      (let [pv (path/parse-path v)
-            parsed-uri (some #{"http:" "https:" "mailto:"} pv)]
-        (if-not (nil? parsed-uri)
-          v
-          (let [rel (sp/relativise->
-                     (.getParent (File. se/views-path p))
-                     se/views-path)]
-            (str rel "/" v))))
-      (if (= m "live") 
-        (if (some #{(sp/extension v)} ROOT-EXT) (str "/" v) v)
+      (if-not (nil? (valid-asset? v))
+        v
+        (let [rel (sp/relativise-> (.getParent (File. se/views-path p))
+                   se/views-path)]
+          (str rel "/" v)))
+      (if (= m "live")
+        (if (valid-asset? v) (str "/" v) v)
         v))))
 
 (defn relativise-attrs
