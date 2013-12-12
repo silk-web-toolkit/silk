@@ -82,10 +82,17 @@
 
 (defn- swap-component->
   [c i]
-  (l/document
-   (l/parse c)
-   (l/attr= "data-sw-component" (:data-sw-component i))
-   (l/replace (build-component i))))
+  (if (:data-sw-source i)
+    (l/document
+      (l/parse c)
+      (l/and
+        (l/attr= "data-sw-source" (:data-sw-source i))
+        (l/attr= "data-sw-component" (:data-sw-component i)) )
+      (l/replace (build-component i)))
+    (l/document
+      (l/parse c)
+      (l/attr= "data-sw-component" (:data-sw-component i))
+      (l/replace (build-component i)))))
 
 
 ;; =============================================================================
