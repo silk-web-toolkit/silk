@@ -29,7 +29,7 @@
     '()))
 
 ;; fatigued, will abstract this out later :-(
-(defn get-component-datasource-tree
+(defn- get-component-datasource-tree
   [data-params]
   (if-let [source (:data-sw-source data-params)]
     (let [res (sf/data source)]
