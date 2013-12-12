@@ -41,7 +41,6 @@
   (let [rl {:type :element :tag :li :attrs {:class "folder"} :content [(:name datum)]}
         cont (if (every? #(= (:tag %) :li) (:content datum))
                [(update-in rl [:content] into [{:type :element :tag :ul :content (:content datum)}])]
-               ;;[rl {:type :element :tag :ul :content (:content datum)}]
                [(update-in rl [:content] into (:content datum))])]
     (-> datum
         (assoc :type :element :tag :ul :content cont))))
