@@ -33,12 +33,12 @@
    Mode enables different behaviour across different intended environments."
   [v p m]
   (let [vp (.getParent (File. p))]
-    (if-not (nil? vp)
-      (if-not (nil? (valid-asset? v))
-        v
+    (if vp
+      (if (valid-asset? v)
         (let [rel (sp/relativise-> (.getParent (File. se/views-path p))
                    se/views-path)]
-          (str rel "/" v)))
+          (str rel "/" v))
+        v)
       (if (= m "live")
         (if (valid-asset? v) (str "/" v) v)
         v))))
