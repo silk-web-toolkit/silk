@@ -30,11 +30,11 @@
                       (l/child-of (l/element= :body) (l/any))))
                 (l/element= :body)
                   (l/add-class 
-                    (or
+                    (str "silk-template-" (or
                       (:content (:attrs (first meta-template)))
-                      "default"))
+                      "default")))
                 (l/element= :body)
-                  (l/add-class (first (split (.getName v) #"\."))))}))
+                  (l/add-class (str "silk-view-" (first (split (.getName v) #"\.")))))}))
 
 (defn template-wrap->
   []

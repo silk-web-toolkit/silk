@@ -9,7 +9,12 @@
 
 (defonce fs (File/separator))
 
-(defonce silk-home (str user-home fs ".silk"))
+(defonce silk-home 
+  (get (System/getenv)
+    "SILK_PATH"
+    (str user-home fs ".silk")))
+
+(defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
 
 (defonce runtime-templates-path
   (get (System/getenv)

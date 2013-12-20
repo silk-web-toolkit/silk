@@ -4,5 +4,6 @@
 .DS_Store
 *.jar
 .lein-deps-sum
+.lein-repl-history
 pom.xml
 

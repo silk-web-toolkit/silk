@@ -26,3 +26,11 @@
   (file lv)))
 
 (defn get-views [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
+
+(defn store-project-dir
+  "Writes the current project directory to the central store."
+  []
+  (let [file se/spun-projects-file pwd se/pwd]
+    (if (not (.exists file)) (.createNewFile file))
+    (if (not (.contains (slurp (.getPath file)) pwd))
+      (spit (.getPath file) (str pwd "\n") :append true))))
