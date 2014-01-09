@@ -22,9 +22,12 @@
 (defn- valid-asset?
   "is asset relative and of the correct type"
   [asset]
-  (and (some #{(sp/extension asset)} ROOT-EXT)
-       (not (.startsWith asset "/"))
-       (not (external-uri? asset))))
+  (and
+    (or
+      (some #{(sp/extension asset)} ROOT-EXT)
+      (= (.lastIndexOf asset ".") -1))
+    (not (.startsWith asset "/"))
+    (not (external-uri? asset))))
 
 
 (defn- relativise-attr
