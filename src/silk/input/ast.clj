@@ -1,7 +1,23 @@
 (ns silk.input.ast
   "AST input functions, describes the shape of aspects of the AST and enables
    selection over them."
-  (:require [me.raynes.laser :as l]))
+  (:require [me.raynes.laser :as l]
+            [silk.transform.element :as sel]))
+
+;; =============================================================================
+;; Helper functions
+;; =============================================================================
+
+(defn- split-keyword-args
+  "Split an argument list into a map of keyword arguments and their values
+   and a seq of the rest of the arguments. Assumes all of the keyword arguments
+   come first in the list."
+  [args]
+  (let [[others keyword-args] ((juxt drop-while take-while)
+                               (comp keyword? first)
+                               (partition-all 2 args))]
+    [(into {} (map vec keyword-args)) (apply concat others)]))
+
 
 ;; =============================================================================
 ;; AST domain description functions, see namespace comment
@@ -74,3 +90,21 @@
   "Get sequence of children of a body element."
   [m]
   (l/select m (l/child-of (l/element= :body) (l/any))))
+
+
+;; document processing
+;;;;;;;;;;;;;;;;;;;;;;
+
+(defmacro defdocrel
+  "Relativises the result of this document inclusion.
+   Must be used if the template pulls in components for example."
+  [name s fargs & args]
+  (let [[{bindings :let, parser :parser, resource :resource} fns]
+          (split-keyword-args args)]
+    `(let [html# (l/parse ~s :parser ~parser :resource ~resource)]
+       (defn ~name ~fargs
+         (let ~(or bindings [])
+           (:content (sel/relativise-attrs :a :href
+                                   {:path (.getPath ~s)
+                                    :content (l/document html# ~@fns)}
+                                   "live")))))))
