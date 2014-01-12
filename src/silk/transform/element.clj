@@ -27,6 +27,7 @@
       (some #{(sp/extension asset)} ROOT-EXT)
       (= (.lastIndexOf asset ".") -1))
     (not (.startsWith asset "/"))
+    (not (.startsWith asset "javascript:"))
     (not (external-uri? asset))))
 
 
