@@ -1,11 +1,11 @@
-(ns silk.transform.element
+(ns silk.core.transform.element
   "Artifact element transformation, for example attribute rewriting for
    page elements.  Initially mimetype for content is HTML5.  Principally
    we are working with a view driven pipeline."
   (:require [me.raynes.laser :as l]
             [pathetic.core :as path]
-            [silk.input.env :as se]
-            [silk.transform.path :as sp])
+            [silk.core.input.env :as se]
+            [silk.core.transform.path :as sp])
   (import java.io.File))
 
 ;; =============================================================================

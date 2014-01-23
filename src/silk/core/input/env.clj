@@ -1,4 +1,4 @@
-(ns silk.input.env
+(ns silk.core.input.env
   "Configuration of environment."
   (:require [clojure.java.io :refer [file]])
   (:import java.io.File))

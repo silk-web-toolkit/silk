@@ -1,8 +1,8 @@
-(ns silk.input.ast
+(ns silk.core.input.ast
   "AST input functions, describes the shape of aspects of the AST and enables
    selection over them."
   (:require [me.raynes.laser :as l]
-            [silk.transform.element :as sel]))
+            [silk.core.transform.element :as sel]))
 
 ;; =============================================================================
 ;; Helper functions

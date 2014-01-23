@@ -1,14 +1,14 @@
-(ns silk.transform.pipeline
+(ns silk.core.transform.pipeline
   "Pipeline abstractions.
    Principally view driven."
   (:require [me.raynes.laser :as l]
-            [silk.input.env :as se]
-            [silk.input.file :as sf]
-            [silk.input.file :as sf]
-            [silk.transform.component :as sc]
-            [silk.transform.element :as sel]
-            [silk.transform.view :as sv]
-            [silk.transform.path :as sp]))
+            [silk.core.input.env :as se]
+            [silk.core.input.file :as sf]
+            [silk.core.input.file :as sf]
+            [silk.core.transform.component :as sc]
+            [silk.core.transform.element :as sel]
+            [silk.core.transform.view :as sv]
+            [silk.core.transform.path :as sp]))
 
 ;; =============================================================================
 ;; Helper functions

@@ -1,8 +1,8 @@
-(ns silk.input.file
+(ns silk.core.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
             [me.rossputin.diskops :as do]
-            [silk.input.env :as se])
+            [silk.core.input.env :as se])
   (import java.io.File))
 
 ;; =============================================================================

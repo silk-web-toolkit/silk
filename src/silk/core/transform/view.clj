@@ -1,12 +1,12 @@
-(ns silk.transform.view
+(ns silk.core.transform.view
   "View related transformations.
    Principally view driven."
   (:require [me.raynes.laser :as l]
-            [silk.input.env :as se]
-            [silk.input.ast :as ds]
-            [silk.input.file :as sf]
-            [silk.transform.ast :as tx]
-            [silk.transform.path :as sp])
+            [silk.core.input.env :as se]
+            [silk.core.input.ast :as ds]
+            [silk.core.input.file :as sf]
+            [silk.core.transform.ast :as tx]
+            [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================

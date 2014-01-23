@@ -1,4 +1,4 @@
-(ns silk.transform.entire
+(ns silk.core.transform.entire
   "Full data set related transformations.
    Note our payload is typically something like paginate-payload
    see input.pipeline.")

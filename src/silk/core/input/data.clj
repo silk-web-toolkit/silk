@@ -1,4 +1,4 @@
-(ns silk.input.data
+(ns silk.core.input.data
   "Data input functions."
   (:require [clojure.edn :as edn]))
 

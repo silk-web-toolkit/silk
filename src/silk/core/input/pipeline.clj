@@ -1,4 +1,4 @@
-(ns silk.input.pipeline
+(ns silk.core.input.pipeline
   "Generic inputs (payloads) within a transformation pipeline.")
 
 (def paginate-payload {:data []

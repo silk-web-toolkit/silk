@@ -1,4 +1,4 @@
-(ns silk.transform.path
+(ns silk.core.transform.path
   "Path transformations.
    Silk specific, ie component namespaces, OS and relativisation related."
    (:require [pathetic.core :as path])
