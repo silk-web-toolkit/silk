@@ -12,7 +12,7 @@
 ;; Element transformation functions, see namespace comment
 ;; =============================================================================
 
-(def ROOT-EXT #{"css" "js" "png" "gif" "jpg"})
+(def ROOT-EXT #{"css" "less" "js" "png" "gif" "jpg"})
 
 (defn- external-uri?
   "determine if asset is pointed to by external uri"
