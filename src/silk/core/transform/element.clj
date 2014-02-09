@@ -12,7 +12,7 @@
 ;; Element transformation functions, see namespace comment
 ;; =============================================================================
 
-(def ROOT-EXT #{"css" "less" "js" "png" "gif" "jpg"})
+(def ROOT-EXT #{"css" "less" "js" "png" "gif" "jpg" "html"})
 
 (def PREFIXES #{"http:" "https:" "/" "javascript:" "#" "mailto:" "tel:"})
 
