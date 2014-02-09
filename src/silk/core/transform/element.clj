@@ -14,10 +14,9 @@
 
 (def ROOT-EXT #{"css" "less" "js" "png" "gif" "jpg"})
 
-(defn- external-uri?
-  "determine if asset is pointed to by external uri"
-  [asset]
-  (some #{"http:" "https:" "mailto:"} (path/parse-path asset)))
+(def PREFIXES #{"http:" "https:" "/" "javascript:" "#" "mailto:" "tel:"})
+
+(defn- has-prefix? [uri prefixes] (some #(.startsWith uri %) prefixes))
 
 (defn- valid-asset?
   "is asset relative and of the correct type"
@@ -26,9 +25,7 @@
     (or
       (some #{(sp/extension asset)} ROOT-EXT)
       (= (.lastIndexOf asset ".") -1))
-    (not (.startsWith asset "/"))
-    (not (.startsWith asset "javascript:"))
-    (not (external-uri? asset))))
+    (not (has-prefix? asset PREFIXES))))
 
 
 (defn- relativise-attr
