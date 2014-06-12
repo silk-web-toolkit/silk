@@ -11,7 +11,7 @@
 
 (defn system-root-resource
   [rel-path system-root]
-  (let [sep (if (re-find #"indow" se/os) "\\\\" se/fs)
+  (let [sep (if (re-find #"indow" se/os) "\\\\" do/fs)
         path (str system-root sep (.replaceAll rel-path "/" sep))]
     (file path)))
 
@@ -52,13 +52,13 @@
    Typically used to source artifacts from either a local silk project directory,
    an env var root or silk home."
   [rel-path local-root system-root]
-  (let [local-res-path (str se/pwd se/fs local-root se/fs rel-path)
+  (let [local-res-path (str do/pwd do/fs local-root do/fs rel-path)
         local-file (file local-res-path)
         reserve (system-root-resource rel-path system-root)]
     (cond
       (.exists local-file) local-file
       (.exists reserve) reserve
-      :else (file (str se/silk-home se/fs local-root se/fs rel-path)))))
+      :else (file (str se/silk-home do/fs local-root do/fs rel-path)))))
 
 (defn component
   [path]
@@ -94,7 +94,7 @@
    Assume for now we will only generate detail pages from local data.  Unsure how
    to resolve shared data... it must not overwrite local etc."
   []
-  (->> (get-data-meta (file se/pwd "data"))
+  (->> (get-data-meta (file do/pwd "data"))
      (map #(file (:path %)))
      (filter #(.isFile %))
      (map #(.getParent %))

@@ -2,6 +2,7 @@
   "AST transformation."
   (:require [clojure.walk :as walk]
             [me.raynes.laser :as l]
+            [me.rossputin.diskops :as do]
             [silk.core.input.env :as se]
             [silk.core.input.ast :as ds]
             [silk.core.input.data :as dt]
@@ -14,7 +15,7 @@
 (defn- detail-write
   [val attr ext]
   (if (and (= attr :href) (= (sp/extension val) "edn"))
-    (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) val)]
+    (let [rel (sp/relativise-> (str do/pwd do/fs "data" do/fs) val)]
       (sp/update-extension rel ext))
     val))
 

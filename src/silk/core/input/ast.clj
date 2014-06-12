@@ -2,6 +2,7 @@
   "AST input functions, describes the shape of aspects of the AST and enables
    selection over them."
   (:require [me.raynes.laser :as l]
+            [me.rossputin.diskops :as do]
             [silk.core.transform.element :as sel]))
 
 ;; =============================================================================
