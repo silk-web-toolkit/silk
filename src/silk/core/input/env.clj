@@ -16,15 +16,15 @@
 (defonce silk-home
   (get (System/getenv)
     "SILK_PATH"
-    (str user-home do/fs ".silk")))
+    (str user-home (do/fs) ".silk")))
 
-(defonce spun-projects-file (file (str silk-home do/fs "spun-projects.txt")))
+(defonce spun-projects-file (file (str silk-home (do/fs) "spun-projects.txt")))
 
 ;; configured to work with static spins and server compile time 'page' artefact caching
 (defonce templates-path
   (get (System/getenv)
     "SILK_TEMPLATES_PATH"
-    (str do/pwd do/fs "template" do/fs)))
+    (str (do/pwd) (do/fs) "template" (do/fs))))
 
 ;; used by quantum-resource in static spins to get component and fallback
 ;; local/env var/shared
@@ -32,10 +32,10 @@
 (defonce components-path
   (get (System/getenv)
     "SILK_COMPONENTS_PATH"
-    (str silk-home do/fs "components")))
+    (str silk-home (do/fs) "components")))
 
-(defonce views-path (str do/pwd do/fs "view" do/fs))
+(defonce views-path (str (do/pwd) (do/fs) "view" (do/fs)))
 
-(defonce site-path (str do/pwd do/fs "site" do/fs))
+(defonce site-path (str (do/pwd) (do/fs) "site" (do/fs)))
 
-(defonce data-path (str silk-home do/fs "data"))
+(defonce data-path (str silk-home (do/fs) "data"))

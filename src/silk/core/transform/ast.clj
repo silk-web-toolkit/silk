@@ -15,7 +15,7 @@
 (defn- detail-write
   [val attr ext]
   (if (and (= attr :href) (= (sp/extension val) "edn"))
-    (let [rel (sp/relativise-> (str do/pwd do/fs "data" do/fs) val)]
+    (let [rel (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) val)]
       (sp/update-extension rel ext))
     val))
 

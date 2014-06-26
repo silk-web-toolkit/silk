@@ -49,7 +49,7 @@
   [{path :path template :template}]
   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
     (for [p path w wrapped]
-      (let [rel-p (sp/relativise-> (str do/pwd do/fs "data" do/fs) (.getPath p))
+      (let [rel-p (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) (.getPath p))
             data-inj
             (l/document
              (l/parse (:content w))

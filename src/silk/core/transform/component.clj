@@ -48,7 +48,7 @@
 
 (defn- transcend-file
   [datum]
-  (let [rel (sp/relativise-> (str do/pwd do/fs "data" do/fs) (:path datum))
+  (let [rel (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) (:path datum))
         conv-p (sp/update-extension rel "html")
         cont {:type :element :tag :a :attrs {:href conv-p} :content (:content datum)}
         mod (assoc datum :type :element :tag :li :content [cont])]
