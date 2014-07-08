@@ -8,7 +8,7 @@
 
 (defn- enhance-datum-content
   [datum]
-  (assoc datum :content (edn/read-string (slurp (:path datum)))))
+  (assoc datum :content (edn/read-string (slurp (:silk/path datum)))))
 
 
 ;; =============================================================================
