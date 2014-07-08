@@ -64,7 +64,6 @@
   [data]
   (walk/postwalk eval-element data))
 
-;; todo: only handles two types of repeating element; tr and li - very proto code (POC)
 (defn- build-component
   [comp-params]
   (let [path (:data-sw-component comp-params)
