@@ -1,23 +1,22 @@
-(ns silk.transform.element
+(ns silk.core.transform.element
   "Artifact element transformation, for example attribute rewriting for
    page elements.  Initially mimetype for content is HTML5.  Principally
    we are working with a view driven pipeline."
   (:require [me.raynes.laser :as l]
             [pathetic.core :as path]
-            [silk.input.env :as se]
-            [silk.transform.path :as sp])
+            [silk.core.input.env :as se]
+            [silk.core.transform.path :as sp])
   (import java.io.File))
 
 ;; =============================================================================
 ;; Element transformation functions, see namespace comment
 ;; =============================================================================
 
-(def ROOT-EXT #{"css" "js" "png" "gif" "jpg"})
+(def ROOT-EXT #{"css" "less" "js" "png" "gif" "jpg" "html"})
 
-(defn- external-uri?
-  "determine if asset is pointed to by external uri"
-  [asset]
-  (some #{"http:" "https:" "mailto:"} (path/parse-path asset)))
+(def PREFIXES #{"http:" "https:" "/" "javascript:" "#" "mailto:" "tel:"})
+
+(defn- has-prefix? [uri prefixes] (some #(.startsWith uri %) prefixes))
 
 (defn- valid-asset?
   "is asset relative and of the correct type"
@@ -26,9 +25,7 @@
     (or
       (some #{(sp/extension asset)} ROOT-EXT)
       (= (.lastIndexOf asset ".") -1))
-    (not (.startsWith asset "/"))
-    (not (.startsWith asset "javascript:"))
-    (not (external-uri? asset))))
+    (not (has-prefix? asset PREFIXES))))
 
 
 (defn- relativise-attr

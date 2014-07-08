@@ -1,6 +1,7 @@
-(ns silk.input.env
+(ns silk.core.input.env
   "Configuration of environment."
-  (:require [clojure.java.io :refer [file]])
+  (:require [clojure.java.io :refer [file]]
+            [me.rossputin.diskops :as do])
   (:import java.io.File))
 
 ;; =============================================================================
@@ -9,25 +10,21 @@
 
 (defonce os (System/getProperty "os.name"))
 
-(defonce pwd (. (file ".") getCanonicalPath))
-
 (defonce user-home (System/getProperty (str "user.home")))
-
-(defonce fs (File/separator))
 
 ;; used for last spun time and silk project list
 (defonce silk-home
   (get (System/getenv)
     "SILK_PATH"
-    (str user-home fs ".silk")))
+    (str user-home (do/fs) ".silk")))
 
-(defonce spun-projects-file (file (str silk-home fs "spun-projects.txt")))
+(defonce spun-projects-file (file (str silk-home (do/fs) "spun-projects.txt")))
 
 ;; configured to work with static spins and server compile time 'page' artefact caching
 (defonce templates-path
   (get (System/getenv)
     "SILK_TEMPLATES_PATH"
-    (str pwd fs "template" fs)))
+    (str (do/pwd) (do/fs) "template" (do/fs))))
 
 ;; used by quantum-resource in static spins to get component and fallback
 ;; local/env var/shared
@@ -35,10 +32,10 @@
 (defonce components-path
   (get (System/getenv)
     "SILK_COMPONENTS_PATH"
-    (str silk-home fs "components")))
+    (str silk-home (do/fs) "components")))
 
-(defonce views-path (str pwd fs "view" fs))
+(defonce views-path (str (do/pwd) (do/fs) "view" (do/fs)))
 
-(defonce site-path (str pwd fs "site" fs))
+(defonce site-path (str (do/pwd) (do/fs) "site" (do/fs)))
 
-(defonce data-path (str silk-home fs "data"))
+(defonce data-path (str silk-home (do/fs) "data"))

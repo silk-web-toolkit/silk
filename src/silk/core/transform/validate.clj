@@ -1,4 +1,4 @@
-(ns silk.transform.validate
+(ns silk.core.transform.validate
   "TODO: this is really an import validate pipeline, rename/reorg as such.
      seed-data, structural-analysis and field-analysis are more generic but
      tx-eligibility-analysis is fairly specific to an import.

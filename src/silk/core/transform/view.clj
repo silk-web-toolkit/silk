@@ -1,12 +1,13 @@
-(ns silk.transform.view
+(ns silk.core.transform.view
   "View related transformations.
    Principally view driven."
   (:require [me.raynes.laser :as l]
-            [silk.input.env :as se]
-            [silk.input.ast :as ds]
-            [silk.input.file :as sf]
-            [silk.transform.ast :as tx]
-            [silk.transform.path :as sp])
+            [me.rossputin.diskops :as do]
+            [silk.core.input.env :as se]
+            [silk.core.input.ast :as ds]
+            [silk.core.input.file :as sf]
+            [silk.core.transform.ast :as tx]
+            [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -48,7 +49,7 @@
   [{path :path template :template}]
   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
     (for [p path w wrapped]
-      (let [rel-p (sp/relativise-> (str se/pwd se/fs "data" se/fs) (.getPath p))
+      (let [rel-p (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) (.getPath p))
             data-inj
             (l/document
              (l/parse (:content w))

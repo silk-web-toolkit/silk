@@ -1,13 +1,14 @@
-(ns silk.transform.component
+(ns silk.core.transform.component
   "Component related transformations.  "
   (:require [clojure.java.io :refer [file]]
             [clojure.walk :as walk]
             [me.raynes.laser :as l]
-            [silk.input.ast :as ds]
-            [silk.input.env :as se]
-            [silk.input.file :as sf]
-            [silk.transform.ast :as tx]
-            [silk.transform.path :as sp])
+            [me.rossputin.diskops :as do]
+            [silk.core.input.ast :as ds]
+            [silk.core.input.env :as se]
+            [silk.core.input.file :as sf]
+            [silk.core.transform.ast :as tx]
+            [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
@@ -47,7 +48,7 @@
 
 (defn- transcend-file
   [datum]
-  (let [rel (sp/relativise-> (str se/pwd se/fs "data" se/fs) (:path datum))
+  (let [rel (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) (:path datum))
         conv-p (sp/update-extension rel "html")
         cont {:type :element :tag :a :attrs {:href conv-p} :content (:content datum)}
         mod (assoc datum :type :element :tag :li :content [cont])]

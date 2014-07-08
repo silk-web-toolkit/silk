@@ -1,4 +1,4 @@
-(ns silk.transform.paginate
+(ns silk.core.transform.paginate
   "Pagination related transformations.
    Note our payload is typically something like paginate-payload
    see input.pipeline."
