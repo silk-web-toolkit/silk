@@ -27,12 +27,35 @@
       node)
     node))
 
+(defn- datum-key
+  "Return a key out of the node attributes unless we are working with an href
+   attribute which has special contextual possibilities ie '#anchor'."
+  [node dattr attr]
+  (if-let [datum-key (dattr (:attrs node))]
+    (if (= attr :href)
+      (if (.startsWith datum-key "#")
+        (keyword (subs datum-key 1))
+        (keyword datum-key))
+      (keyword datum-key))
+    (keyword datum-key)))
+
+(defn- datum-value
+  "Handle results from href as a special case, there are contextual
+   possibilities like prepending with a '#'."
+  [node datum dattr attr val]
+  (let [result (dt/datum-extract datum val)]
+    (if (= attr :href)
+      (if (.startsWith (dattr (:attrs node)) "#")
+        (str "#" result)
+        result)
+      result)))
+
 ;; todo: final param is a result of proto code (POC)
 (defn- attr-write
   [node datum dattr attr]
-  (let [val (keyword (dattr (:attrs node)))]
+  (let [val (datum-key node dattr attr)]
     (if (and (contains? (:attrs node) attr) (contains? (:attrs node) dattr))
-      (if-let [result (dt/datum-extract datum val)]
+      (if-let [result (datum-value node datum dattr attr val)]
         (assoc-in node [:attrs attr] (detail-write result attr "html"))
         node)
       node)))
