@@ -32,7 +32,7 @@
 ;; TODO: very proto code (POC)
 (defn get-dynamic-attribs
   []
-  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title])
+  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title :data-sw-id])
 
 
 ;; =============================================================================
@@ -50,7 +50,8 @@
    (l/attr? :data-sw-href)
    (l/attr? :data-sw-src)
    (l/attr? :data-sw-class)
-   (l/attr? :data-sw-title)))
+   (l/attr? :data-sw-title)
+   (l/attr? :data-sw-id)))
 
 (defn repeat-orphaned?
   "Is not a descendant of a repeating element type and is a data writeable ?"

@@ -44,8 +44,9 @@
         text-href (attr-write text-ins datum :data-sw-href :href)
         text-src (attr-write text-href datum :data-sw-src :src)
         text-class (attr-write text-src datum :data-sw-class :class)
-        text-title (attr-write text-class datum :data-sw-title :title)]
-    text-title))
+        text-title (attr-write text-class datum :data-sw-title :title)
+        text-id (attr-write text-title datum :data-sw-id :id)]
+    text-id))
 
 (defn- eval-element
   [node datum]
@@ -69,8 +70,9 @@
           text-href (attr-write text-ins (first data) :data-sw-href :href)
           text-src (attr-write text-href (first data) :data-sw-src :src)
           text-class (attr-write text-src (first data) :data-sw-class :class)
-          text-title (attr-write text-class (first data) :data-sw-title :title)]
-      text-title)))
+          text-title (attr-write text-class (first data) :data-sw-title :title)
+          text-id (attr-write text-title (first data) :data-sw-id :id)]
+      text-id)))
 
 (defn repeat-component
   [data]
