@@ -33,21 +33,22 @@
   [node dattr attr]
   (if-let [datum-key (dattr (:attrs node))]
     (if (= attr :href)
-      (if (.startsWith datum-key "#")
-        (keyword (subs datum-key 1))
+      (if (.contains datum-key "#")
+        (keyword (subs datum-key (+ (.indexOf datum-key "#") 1)))
         (keyword datum-key))
       (keyword datum-key))
     (keyword datum-key)))
 
 (defn- datum-value
   "Handle results from href as a special case, there are contextual
-   possibilities like prepending with a '#'."
+   possibilities like prepending with a '#' or 'view.html#'."
   [node datum dattr attr val]
   (let [result (dt/datum-extract datum val)]
     (if (= attr :href)
-      (if (.startsWith (dattr (:attrs node)) "#")
-        (str "#" result)
-        result)
+      (let [href (dattr (:attrs node))]
+        (if (.contains href "#")
+          (str (subs href 0 (+ (.indexOf href "#") 1)) result)
+          result))
       result)))
 
 ;; todo: final param is a result of proto code (POC)
