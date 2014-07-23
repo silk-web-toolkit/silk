@@ -6,6 +6,7 @@
             [me.rossputin.diskops :as do]
             [silk.core.input.ast :as ds]
             [silk.core.input.env :as se]
+            [silk.core.input.data :as dt]
             [silk.core.input.file :as sf]
             [silk.core.transform.ast :as tx]
             [silk.core.transform.path :as sp])
@@ -25,7 +26,9 @@
   (if-let [source (:data-sw-source data-params)]
     (let [res (sf/data source)]
       (if-let [sort (:data-sw-sort data-params)]
-        (reverse (sort-by (keyword sort) (sf/get-data-meta res)))
+        (let [data (sf/get-data-meta res)
+              enhanced (map #(merge % (dt/read-datum %)) data)]
+          (reverse (sort-by (keyword sort) enhanced)))
         (sf/get-data-meta res)))
     '()))
 
