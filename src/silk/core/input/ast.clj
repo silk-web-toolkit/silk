@@ -27,7 +27,7 @@
 
 (defn get-component-attribs
   []
-  [:data-sw-component :data-sw-source :data-sw-type :data-sw-sort])
+  [:data-sw-component :data-sw-source :data-sw-type :data-sw-sort :data-sw-sort-dir])
 
 ;; TODO: very proto code (POC)
 (defn get-dynamic-attribs

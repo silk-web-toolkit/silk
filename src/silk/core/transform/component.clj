@@ -21,15 +21,21 @@
   (let [res (sf/component path)]
     (ds/body-content (l/parse res))))
 
+(defn- sort->
+  "Default to descending sort.  Enhance with edn data file keys before sorting."
+  [data sort dir]
+  (let [enhanced (map #(merge % (dt/read-datum %)) data)
+       ascending (sort-by (keyword sort) enhanced)]
+    (if-let [d dir]
+      (if (= d "ascending") ascending (reverse ascending))
+      ascending)))
+
 (defn- get-component-datasource
-  [data-params]
-  (if-let [source (:data-sw-source data-params)]
-    (let [res (sf/data source)]
-      (if-let [sort (:data-sw-sort data-params)]
-        (let [data (sf/get-data-meta res)
-              enhanced (map #(merge % (dt/read-datum %)) data)]
-          (reverse (sort-by (keyword sort) enhanced)))
-        (sf/get-data-meta res)))
+  [{source :data-sw-source sort :data-sw-sort dir :data-sw-sort-dir}]
+  (if-let [src source]
+    (let [res (sf/data source)
+          data (sf/get-data-meta res)]
+      (if-let [srt sort] (sort-> data srt dir) data))
     '()))
 
 ;; fatigued, will abstract this out later :-(
