@@ -4,7 +4,6 @@
   (:require [me.raynes.laser :as l]
             [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
-            [silk.core.input.file :as sf]
             [silk.core.transform.component :as sc]
             [silk.core.transform.element :as sel]
             [silk.core.transform.view :as sv]
