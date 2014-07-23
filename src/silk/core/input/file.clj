@@ -9,14 +9,12 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn system-root-resource
-  [rel-path system-root]
+(defn system-root-resource [rel-path system-root]
   (let [sep (if (re-find #"indow" se/os) "\\\\" (do/fs))
         path (str system-root sep (.replaceAll rel-path "/" sep))]
     (file path)))
 
-(defn- file-2-map
-  [f]
+(defn- file-2-map [f]
   {:silk/last-modified (.lastModified f)
    :silk/name (.getName f)
    :silk/path (.getPath f)
@@ -27,8 +25,7 @@
 
 (defstruct node-st :name :path :content :node-type)
 
-(defn file-tree
-  [#^File f]
+(defn file-tree [#^File f]
   (if (.isDirectory f)
     (struct node-st (.getName f) (.getPath f) (vec (map file-tree (.listFiles f))) :directory)
     (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
@@ -60,16 +57,12 @@
       (.exists reserve) reserve
       :else (file (str se/silk-home (do/fs) local-root (do/fs) rel-path)))))
 
-(defn component
-  [path]
+(defn component [path]
   (quantum-resource (str path ".html") "components" se/components-path))
 
-(defn data
-  [path]
-  (quantum-resource path "data" se/data-path))
+(defn data [path] (quantum-resource path "data" se/data-path))
 
-(defn get-views
-  []
+(defn get-views []
   (-> (get-views-raw)
       (do/filter-exts ["html"])))
 
