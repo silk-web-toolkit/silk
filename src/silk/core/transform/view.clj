@@ -14,15 +14,13 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- get-template
-  [t]
+(defn- get-template [t]
   (if-not (nil? (first t))
                    (sf/template
                     (str (:content (:attrs (first t))) ".html"))
                    (sf/template "default.html")))
 
-(defn- view-inject
-  [v]
+(defn- view-inject [v]
   (let [parsed-view (l/parse v)
         meta-template (ds/template parsed-view)
         template (get-template meta-template)]
@@ -40,13 +38,11 @@
 ;; Payload transformation functions, see namespace comment
 ;; =============================================================================
 
-(defn template-wrap->
-  []
+(defn template-wrap-> []
   (let [views (sf/get-views)]
     (map #(view-inject %) views)))
 
-(defn template-wrap-detail->
-  [{path :path template :template}]
+(defn template-wrap-detail-> [{path :path template :template}]
   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
     (for [p path w wrapped]
       (let [rel-p (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) (.getPath p))
