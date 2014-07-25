@@ -28,3 +28,9 @@
 (defn extension
   [p]
   (subs p (+ 1 (.lastIndexOf p "."))))
+
+(defn basename
+  [p]
+  (println "p : " p)
+  (println "last index of . : " (.lastIndexOf p "."))
+  (subs p 0 (.lastIndexOf p ".")))
