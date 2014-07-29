@@ -9,7 +9,7 @@
 
 (defn- el [n e] (l/select n (l/element= e)))
 
-(defn- attr-value[el attr] (get (get (first el) :attrs) attr))
+(defn- attr-value[el attr] (get-in (first el) [:attrs attr]))
 
 (defn- text [s] (first (:content (first s))))
 
