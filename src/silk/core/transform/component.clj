@@ -9,6 +9,7 @@
             [silk.core.input.data :as dt]
             [silk.core.input.file :as sf]
             [silk.core.transform.ast :as tx]
+            [silk.core.transform.coerce :as sc]
             [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
@@ -31,11 +32,12 @@
       ascending)))
 
 (defn- get-component-datasource
-  [{source :data-sw-source sort :data-sw-sort dir :data-sw-sort-dir}]
+  [{source :data-sw-source limit :data-sw-limit sort :data-sw-sort dir :data-sw-sort-dir}]
   (if-let [src source]
     (let [res (sf/data source)
-          data (sf/get-data-meta res)]
-      (if-let [srt sort] (sort-> data srt dir) data))
+          data (sf/get-data-meta res)
+          sorted (if-let [srt sort] (sort-> data srt dir) data)]
+      (if-let [lim limit] (take (sc/int-> lim) sorted) sorted))
     '()))
 
 ;; fatigued, will abstract this out later :-(
