@@ -31,9 +31,10 @@
             title (attr-value body :data-sw-nav)
             priority (attr-value body :data-sw-priority)
             data (assoc {} :title title :path calc-path :priority priority)
-            menu-path  (str (do/pwd) "/data" "/.menu")]
+            menu-path  (str (do/pwd) "/data" "/.menu")
+            fname (sp/update-extension name "edn")]
         (.mkdirs (File. menu-path))
-        (spit (str menu-path "/" name) (pr-str data))))
+        (spit (str menu-path "/" fname) (pr-str data))))
       ))
 
 ; (defn- furniture-sitemap
