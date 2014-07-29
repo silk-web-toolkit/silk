@@ -13,11 +13,6 @@
 
 (defn- text [s] (first (:content (first s))))
 
-(defn- fname->title
-  "Turns a file name into a UI ready label."
-  [n]
-  (capitalize (sp/basename n)))
-
 (defn- menu!
   "Generate a simple menu nav component.
    One level deep.
@@ -27,13 +22,13 @@
   (let [filtered (filter
                    (fn
                      [{:keys [name parsed]}]
-                     (not-empty (l/select parsed (l/class= "u-url"))))
+                     (not-empty (l/select parsed (l/attr? :data-sw-nav))))
                    views)]
     (doseq [{:keys [name path parsed]} filtered]
-      (let [title (or (text (el parsed "title")) (fname->title name))
-            rel (sp/relativise-> (.getParent (File. path)) se/views-path)
+      (let [rel (sp/relativise-> (.getParent (File. path)) se/views-path)
             calc-path (if (= rel ".") name (str rel "/" name))
             body (el parsed "body")
+            title (attr-value body :data-sw-nav)
             priority (attr-value body :data-sw-priority)
             data (assoc {} :title title :path calc-path :priority priority)
             menu-path  (str (do/pwd) "/data" "/.menu")]
