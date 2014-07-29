@@ -9,6 +9,8 @@
 
 (defn- el [n e] (l/select n (l/element= e)))
 
+(defn- attr-value[el attr] (get (get (first el) :attrs) attr))
+
 (defn- text [s] (first (:content (first s))))
 
 (defn- fname->title
@@ -31,7 +33,9 @@
       (let [title (or (text (el parsed "title")) (fname->title name))
             rel (sp/relativise-> (.getParent (File. path)) se/views-path)
             calc-path (if (= rel ".") name (str rel "/" name))
-            data (assoc {} :title title :path calc-path)
+            body (el parsed "body")
+            priority (attr-value body :data-sw-priority)
+            data (assoc {} :title title :path calc-path :priority priority)
             menu-path  (str (do/pwd) "/data" "/.menu")]
         (.mkdirs (File. menu-path))
         (spit (str menu-path "/" name) (pr-str data))))
