@@ -9,29 +9,29 @@
 
 (defn- el [n e] (l/select n (l/element= e)))
 
-(defn- attr-value[el attr] (get-in (first el) [:attrs attr]))
+(defn- el-attr[n e attr] (get-in (first (el n e)) [:attrs attr]))
 
 (defn- text [s] (first (:content (first s))))
 
 (defn- view-source
   "Create .edn files for each view, one level deep."
   [name path parsed base]
-  (let [rel (sp/relativise-> (.getParent (File. path)) se/views-path)
-        calc-path (if (= rel ".") name (str rel "/" name))
-        body (el parsed "body")
-        title (attr-value body :data-sw-nav)
-        priority (attr-value body :data-sw-priority)
-        data (assoc {} :title title :path calc-path :priority priority)
-        dir (str base (do/fs) "view")
-        fname (str dir (do/fs) (sp/update-extension name "edn"))]
-    (.mkdirs (File. dir))
-    (spit fname (pr-str data))))
+  (when-let [title (el-attr parsed "body" :data-sw-nav)]
+    (let [rel (sp/relativise-> (.getParent (File. path)) se/views-path)
+          calc-path (if (= rel ".") name (str rel "/" name))
+          priority (el-attr parsed "body" :data-sw-priority)
+          data (assoc {} :title title :path calc-path :priority priority)
+          dir (str base (do/fs) "view")
+          fname (str dir (do/fs) (sp/update-extension name "edn"))]
+      (.mkdirs (File. dir))
+      (spit fname (pr-str data)))))
 
 (defn- content-source
   "Create .edn files foreach nav section inside view, one level deep."
   [name parsed base]
   (let [dir (str base (do/fs) "content" (do/fs) (sp/basename name))
-        sections (l/select parsed (l/and (l/attr? :id) (l/attr? :data-sw-nav)))]
+        sections (l/select parsed (l/and
+          (l/negate (l/element= "body")) (l/attr? :data-sw-nav) (l/attr? :id)))]
     (doseq [[idx sec] (map-indexed vector sections)]
       (let [id (get-in sec [:attrs :id])
             title (get-in sec [:attrs :data-sw-nav])
@@ -46,13 +46,8 @@
    Designer of component markup may opt to add microformats or other
    semantic markup."
   [views]
-  (let [base (str (do/pwd) (do/fs) "data" (do/fs) ".nav")
-        filtered (filter
-                   (fn
-                     [{:keys [name parsed]}]
-                     (not-empty (l/select parsed (l/attr? :data-sw-nav))))
-                   views)]
-    (doseq [{:keys [name path parsed]} filtered]
+  (let [base (str (do/pwd) (do/fs) "data" (do/fs) ".nav")]
+    (doseq [{:keys [name path parsed]} views]
       (view-source name path parsed base)
       (content-source name parsed base))))
 
