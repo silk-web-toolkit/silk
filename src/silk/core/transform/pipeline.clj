@@ -6,7 +6,7 @@
             [silk.core.input.file :as sf]
             [silk.core.transform.component :as sc]
             [silk.core.transform.element :as sel]
-            [silk.core.transform.microformat :as sm]
+            [silk.core.transform.preprocess :as pp]
             [silk.core.transform.view :as sv]
             [silk.core.transform.path :as sp]))
 
@@ -34,12 +34,12 @@
 ;; Pipeline abstraction functions, see namespace comment
 ;; =============================================================================
 
-(defn microformat->
-  "Transform data in views into microformat edn files.
+(defn preprocessor->
+  "Transform data in a pipeline into a data source edn files.
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
   [mode]
-  (sm/microformat-edn-> (pre-process (sv/template-wrap->) mode)))
+  (pp/preprocess-> (pre-process (sv/template-wrap->) mode)))
 
 (defn view-driven-pipeline->
   "Transform data in a pipeline suitable for the majority of standard

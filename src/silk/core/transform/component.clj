@@ -77,8 +77,8 @@
   (walk/postwalk eval-element data))
 
 (defn- build-component
-  [pre? comp-params]
-  (if pre?
+  [raw? comp-params]
+  (if raw?
     (get-component-markup (:data-sw-component comp-params))
     (if-let [tree (:data-sw-type comp-params)]
       (let [data (get-component-datasource-tree comp-params)
