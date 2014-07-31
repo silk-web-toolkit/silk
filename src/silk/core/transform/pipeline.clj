@@ -14,16 +14,21 @@
 ;; Helper functions
 ;; =============================================================================
 
+(defn- pre-process
+  [payload mode]
+  (->> payload
+       (map #(sc/process-components true %))
+       (map #(sc/process-components true %))))
+
 (defn- post-process
   [payload mode]
   (->> payload
-       (map #(sc/process-components %))
-       (map #(sc/process-components %))
+       (map #(sc/process-components false %))
+       (map #(sc/process-components false %))
        (map #(sel/relativise-attrs :link :href % mode))
        (map #(sel/relativise-attrs :img :src % mode))
        (map #(sel/relativise-attrs :script :src % mode))
        (map #(sel/relativise-attrs :a :href % mode))))
-
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
@@ -33,8 +38,8 @@
   "Transform data in views into microformat edn files.
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
-  []
-  (sm/microformat-edn->))
+  [mode]
+  (sm/microformat-edn-> (pre-process (sv/template-wrap->) mode)))
 
 (defn view-driven-pipeline->
   "Transform data in a pipeline suitable for the majority of standard

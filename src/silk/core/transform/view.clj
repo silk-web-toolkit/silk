@@ -14,6 +14,10 @@
 ;; Helper functions
 ;; =============================================================================
 
+(defn- el [n e] (l/select n (l/element= e)))
+
+(defn- el-attr[n e attr] (get-in (first (el n e)) [:attrs attr]))
+
 (defn- get-template [t]
   (if-not (nil? (first t))
                    (sf/template
@@ -23,15 +27,19 @@
 (defn- view-inject [v]
   (let [parsed-view (l/parse v)
         meta-template (ds/template parsed-view)
-        template (get-template meta-template)]
-    {:path (sp/relativise-> se/views-path (.getPath v))
+        template (get-template meta-template)
+        name (.getName v)]
+    {:name name
+     :path (sp/relativise-> se/views-path (.getPath v))
+     :nav (el-attr parsed-view  "body" :data-sw-nav)
+     :priority (el-attr parsed-view  "body" :data-sw-priority)
      :content (l/document
                 (l/parse template)
                 (l/attr? "data-sw-view")
                   (l/replace (ds/body-content parsed-view))
                 (l/element= :body) (tx/write-template-class meta-template)
                 (l/element= :body)
-                  (l/add-class (str "silk-view-" (first (split (.getName v) #"\.")))))}))
+                  (l/add-class (str "silk-view-" (first (split name #"\.")))))}))
 
 
 ;; =============================================================================
