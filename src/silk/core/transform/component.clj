@@ -77,34 +77,37 @@
   (walk/postwalk eval-element data))
 
 (defn- build-component
-  [raw? comp-params]
-  (if raw?
-    (get-component-markup (:data-sw-component comp-params))
-    (if-let [tree (:data-sw-type comp-params)]
-      (let [data (get-component-datasource-tree comp-params)
-            walkin (map-walk data)]
-        walkin)
-      (let [data (get-component-datasource comp-params)
-            raw (get-component-markup (:data-sw-component comp-params))]
-        (if (seq data)
-          (l/fragment (l/parse-fragment raw)
-                      (ds/repeating?) (tx/repeat-component data)
-                      (ds/singular?) (tx/single-component data))
-          raw)))))
+  [path raw? comp-params]
+  (try
+    (if raw?
+      (get-component-markup (:data-sw-component comp-params))
+      (if-let [tree (:data-sw-type comp-params)]
+        (let [data (get-component-datasource-tree comp-params)
+              walkin (map-walk data)]
+          walkin)
+        (let [data (get-component-datasource comp-params)
+              raw (get-component-markup (:data-sw-component comp-params))]
+          (if (seq data)
+            (l/fragment (l/parse-fragment raw)
+                        (ds/repeating?) (tx/repeat-component data)
+                        (ds/singular?) (tx/single-component data))
+            raw))))
+  (catch Exception e
+    (throw (Exception. (str (.getMessage e) " when creating view " path) e)))))
 
 (defn- swap-component->
-  [raw? c i]
+  [path raw? c i]
   (if (:data-sw-source i)
     (l/document
       (l/parse c)
       (l/and
         (l/attr= "data-sw-source" (:data-sw-source i))
         (l/attr= "data-sw-component" (:data-sw-component i)) )
-      (l/replace (build-component raw? i)))
+      (l/replace (build-component path raw? i)))
     (l/document
       (l/parse c)
       (l/attr= "data-sw-component" (:data-sw-component i))
-      (l/replace (build-component raw? i)))))
+      (l/replace (build-component path raw? i)))))
 
 
 ;; =============================================================================
@@ -117,4 +120,5 @@
     (assoc
       t
       :content
-      (reduce #(swap-component-> raw? %1 %2) (:content t) (seq comp-ids)))))
+      (reduce #(swap-component->
+        (get-in t [:path]) raw? %1 %2) (:content t) (seq comp-ids)))))

@@ -49,13 +49,18 @@
    Typically used to source artifacts from either a local silk project directory,
    an env var root or silk home."
   [rel-path local-root system-root]
-  (let [local-res-path (str (do/pwd) (do/fs) local-root (do/fs) rel-path)
+  (let [item-path (str local-root (do/fs) rel-path)
+        local-res-path (str (do/pwd) (do/fs) item-path)
         local-file (file local-res-path)
-        reserve (system-root-resource rel-path system-root)]
+        reserve (system-root-resource rel-path system-root)
+        home (file (str se/silk-home (do/fs) item-path))
+        sw (file (str se/silk-home (do/fs) rel-path))]
     (cond
       (.exists local-file) local-file
       (.exists reserve) reserve
-      :else (file (str se/silk-home (do/fs) local-root (do/fs) rel-path)))))
+      (.exists home) home
+      (.exists sw) sw
+      :else (throw (Exception. (str "Can't find " item-path))))))
 
 (defn component [path]
   (quantum-resource (str path ".html") "components" se/components-path))

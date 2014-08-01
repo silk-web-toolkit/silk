@@ -39,3 +39,9 @@
 (defonce site-path (str (do/pwd) (do/fs) "site" (do/fs)))
 
 (defonce data-path (str silk-home (do/fs) "data"))
+
+(defonce sw-path (str silk-home (do/fs) "sw"))
+
+(defonce sw-views-path (str sw-path (do/fs) "views"))
+
+(defonce sw-bookmarks-path (str sw-path (do/fs) "bookmarks"))
