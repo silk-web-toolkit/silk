@@ -6,7 +6,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn read-datum [datum] (edn/read-string (slurp (:silk/path datum))))
+(defn read-datum [datum] (edn/read-string (slurp (:sw/path datum))))
 
 (defn- enhance-datum-content [datum] (assoc datum :content (read-datum datum)))
 

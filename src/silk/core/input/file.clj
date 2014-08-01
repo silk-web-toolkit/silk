@@ -15,13 +15,13 @@
     (file path)))
 
 (defn- file-2-map [f]
-  {:silk/last-modified (.lastModified f)
-   :silk/name (.getName f)
-   :silk/path (.getPath f)
-   :silk/type (if (.isDirectory f) "directory" "file")
-   :silk/is-directory (.isDirectory f)
-   :silk/is-file (.isFile f)
-   :silk/is-hidden (.isHidden f)})
+  {:sw/last-modified (.lastModified f)
+   :sw/name (.getName f)
+   :sw/path (.getPath f)
+   :sw/type (if (.isDirectory f) "directory" "file")
+   :sw/is-directory (.isDirectory f)
+   :sw/is-file (.isFile f)
+   :sw/is-hidden (.isHidden f)})
 
 (defstruct node-st :name :path :content :node-type)
 
@@ -93,7 +93,7 @@
    to resolve shared data... it must not overwrite local etc."
   []
   (->> (get-data-meta (file (do/pwd) "data"))
-     (map #(file (:silk/path %)))
+     (map #(file (:sw/path %)))
      (filter #(.isFile %))
      (map #(.getParent %))
      distinct))
