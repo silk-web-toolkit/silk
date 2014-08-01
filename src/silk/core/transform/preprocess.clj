@@ -5,6 +5,9 @@
   (:use [clojure.string :only [capitalize]])
   (:import java.io.File))
 
+;; =============================================================================
+;; Helper functions
+;; =============================================================================
 
 (defn- view-data
   "Create .edn data files for each view, one level deep."
@@ -40,6 +43,11 @@
 ; (defn- cache-manifest
 ;   "Generate a cache manifest for the site."
 ;   [])
+
+
+;; =============================================================================
+;; Preprocess transformation functions.
+;; =============================================================================
 
 (defn preprocess->
   "Generates navigation data for menu components."
