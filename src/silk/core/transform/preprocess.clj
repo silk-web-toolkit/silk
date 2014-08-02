@@ -36,11 +36,11 @@
         (.mkdirs (File. calc-path))
         (spit fname (pr-str data))))))
 
-; (defn- furniture-sitemap
+; (defn- furniture-sitemap-data
 ;   "Generate a site wide physical sitemap."
 ;   [])
 
-; (defn- cache-manifest
+; (defn- cache-manifest-data
 ;   "Generate a cache manifest for the site."
 ;   [])
 
