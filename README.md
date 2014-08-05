@@ -14,7 +14,7 @@ Silk is already used in commercial projects at large multinationals.
 
 ## Documentation
 
-[Getting started](http://www.silkyweb.org/getting-started.html).
+[Documentation](http://www.silkyweb.org/documentation.html).
 
 Please see the [silkyweb.org site](http://www.silkyweb.org/) for more documentation.
 
