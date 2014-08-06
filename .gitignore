@@ -2,6 +2,7 @@
 /data
 /lib
 /target
+/rpmbuild
 .DS_Store
 *.jar
 .lein-repl-history
