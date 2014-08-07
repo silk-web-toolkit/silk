@@ -10,6 +10,7 @@ RPM
 ---
 
 (assuming you are in the build directory)
+(substitute your version for 0.5.0 in the instructions below)
 cd rpm
 rpmbuild --define 'version 0.5.0' --define 'release develop' --define "_topdir $PWD/rpmbuild" -bb silk.spec --target noarch
 
