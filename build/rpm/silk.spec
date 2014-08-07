@@ -17,16 +17,15 @@ Silk Web Toolkit.
 
 %install
 cd %{_topdir}/../
-mkdir $HOME/.silk
 mkdir -p %{buildroot}/usr/bin
-mkdir -p %{buildroot}/usr/lib/silk
-cp -r target/*standalone* %{buildroot}/usr/lib/silk/silk.jar
+mkdir -p %{buildroot}/usr/lib/silk-web-toolkit
+cp -r target/*standalone* %{buildroot}/usr/lib/silk-web-toolkit/silk.jar
 cp -r build/etc/silk %{buildroot}/usr/bin
 
 %files
 %defattr (755,root,root,-)
 /usr/bin/silk
-/usr/lib/silk/silk.jar
+/usr/lib/silk-web-toolkit/silk.jar
 
 %post
 

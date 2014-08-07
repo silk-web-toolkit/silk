@@ -8,9 +8,22 @@ Silk allows you to build static websites out of re-usable building blocks withou
 
 Improve the security of the web, use static wherever possible.  How many sites are dynamic beyond a contact form really ?  Why generate site content for every visit when you can do it once ?
 
+
+## Getting Started
+
+### Development
+
+Run lein uberjar to build a single jar file for the project.
+
+### Releases and distribution
+
+See the build instructions in build/README.md to build for various platforms.
+
+
 ## Status
 
 Silk is already used in commercial projects at large multinationals.
+
 
 ## Documentation
 
@@ -18,11 +31,13 @@ Silk is already used in commercial projects at large multinationals.
 
 Please see the [silkyweb.org site](http://www.silkyweb.org/) for more documentation.
 
+
 ## Community
 
 [The team](http://www.silkyweb.org/community.html).
 
 Join in over on our <a href="http://groups.google.com/group/silk-user">mailing list</a>.
+
 
 ## License
 

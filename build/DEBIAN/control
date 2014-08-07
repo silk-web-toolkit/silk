@@ -1,0 +1,10 @@
+Package: silk-web-toolkit
+Priority: optional
+Section: devel
+Installed-Size: 100
+Maintainer: Ross McDonald <ross@bheap.co.uk>
+Architecture: all
+Version: 0:%VERSION%
+Depends:
+Description: Silk Web Toolkit
+ A compile time website building toolkit, pure POSH (Plain Old Semantic HTML).
