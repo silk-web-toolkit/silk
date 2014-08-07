@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# build-deb.sh Builds the silk-web-toolkit rpm binary package.
+# build-rpm.sh Builds the silk-web-toolkit rpm binary package.
 # Must be run from the current directory as paths are relative.
 #
 # Ross McDonald <ross@bheap.co.uk>
