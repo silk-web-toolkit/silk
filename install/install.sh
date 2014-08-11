@@ -23,5 +23,4 @@ function download_tarball {
      rm $HOME/bin/silk.tgz
 }
 
-
 download_tarball
