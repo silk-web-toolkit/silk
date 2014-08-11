@@ -11,6 +11,16 @@ Improve the security of the web, use static wherever possible.  How many sites a
 
 ## Getting Started
 
+### Installation
+
+There are binaries for a number of platforms on the releases page.
+
+Alternatively you can run the custom installation script which will put silk in ~/bin.
+
+    bash <(curl -fksSL https://raw.githubusercontent.com/silk-web-toolkit/silk/develop/install/install.sh)
+
+Whichever way you install Silk for version 0.5.0 and earlier you will need to manually create a .silk directory in your user home directory.
+
 ### Development
 
 Run lein uberjar to build a single jar file for the project.
