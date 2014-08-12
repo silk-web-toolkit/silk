@@ -23,7 +23,10 @@
   [node datum attrib]
   (if-let [attr (keyword (attrib (:attrs node)))]
     (if-let [result (dt/datum-extract datum attr)]
-      (assoc node :content [result])
+      (if (.contains (name attr) "-html")
+        (let [frag (l/fragment (l/parse-fragment result))]
+          (assoc node :content frag))
+        (assoc node :content [result]))
       node)
     node))
 
