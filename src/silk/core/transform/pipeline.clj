@@ -17,13 +17,11 @@
 (defn- pre-process
   [payload mode]
   (->> payload
-       (map #(sc/process-components true %))
        (map #(sc/process-components true %))))
 
 (defn- post-process
   [payload mode]
   (->> payload
-       (map #(sc/process-components false %))
        (map #(sc/process-components false %))
        (map #(sel/relativise-attrs :link :href % mode))
        (map #(sel/relativise-attrs :img :src % mode))

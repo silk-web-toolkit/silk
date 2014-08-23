@@ -93,7 +93,7 @@
                         (ds/singular?) (tx/single-component data))
             raw))))
   (catch Exception e
-    (throw (Exception. (str (.getMessage e) " when creating view " path) e)))))
+    (throw (Exception. (str (.getMessage e) " when creating page " path) e)))))
 
 (defn- swap-component->
   [path raw? c i]
@@ -109,16 +109,29 @@
       (l/attr= "data-sw-component" (:data-sw-component i))
       (l/replace (build-component path raw? i)))))
 
+(defn- get-comp-ids->
+  [t]
+  (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))]
+    (map #(select-keys (:attrs %) (ds/get-component-attribs)) comps)))
+
+(defn- process->
+  [raw? t ids]
+  (assoc
+    t
+    :content
+    (reduce #(swap-component->
+      (get-in t [:path]) raw? %1 %2) (:content t) (seq ids))))
+
 
 ;; =============================================================================
 ;; Component transformations, see namespace comment
 ;; =============================================================================
+
 (defn process-components
   [raw? t]
-  (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))
-        comp-ids (map #(select-keys (:attrs %) (ds/get-component-attribs)) comps)]
-    (assoc
+  (let [old-ids (get-comp-ids-> t)
+        c (process-> raw? t old-ids)
+        new-ids (get-comp-ids-> c)]
+    (if (or (= t c) (and (not (empty? old-ids)) (= old-ids new-ids)))
       t
-      :content
-      (reduce #(swap-component->
-        (get-in t [:path]) raw? %1 %2) (:content t) (seq comp-ids)))))
+      (process-components raw? c))))
