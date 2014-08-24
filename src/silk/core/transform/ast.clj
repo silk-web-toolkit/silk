@@ -6,7 +6,8 @@
             [silk.core.input.env :as se]
             [silk.core.input.ast :as ds]
             [silk.core.input.data :as dt]
-            [silk.core.transform.path :as sp]))
+            [silk.core.transform.path :as sp])
+  (:use [clojure.string :only [join split]]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -14,9 +15,10 @@
 
 (defn- detail-write
   [val attr ext]
-  (if (and (= attr :href) (= (sp/extension val) "edn"))
-    (let [rel (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) val)]
-      (sp/update-extension rel ext))
+  (if (and (= attr :href) (= (sp/extension (first (split val #"#"))) "edn"))
+    (let [rel (sp/relativise-> (str (do/pwd) (do/fs) "data" (do/fs)) val)
+          id (if (.contains val "#") (subs val (.indexOf val "#")) "")]
+      (str (sp/update-extension rel ext) id))
     val))
 
 (defn- text-write
@@ -30,36 +32,30 @@
       node)
     node))
 
-(defn- datum-key
+(defn- datum-keys
   "Return a key out of the node attributes unless we are working with an href
    attribute which has special contextual possibilities ie '#anchor'."
   [node dattr attr]
-  (if-let [datum-key (dattr (:attrs node))]
+  (if-let [keys (dattr (:attrs node))]
     (if (= attr :href)
-      (if (.contains datum-key "#")
-        (keyword (subs datum-key (+ (.indexOf datum-key "#") 1)))
-        (keyword datum-key))
-      (keyword datum-key))
-    (keyword datum-key)))
+      (map keyword (split keys #"#"))
+      (map keyword (split keys #" ")))
+    (map keyword keys)))
 
-(defn- datum-value
+(defn- datum-values
   "Handle results from href as a special case, there are contextual
    possibilities like prepending with a '#' or 'view.html#'."
-  [node datum dattr attr val]
-  (let [result (dt/datum-extract datum val)]
-    (if (= attr :href)
-      (let [href (dattr (:attrs node))]
-        (if (.contains href "#")
-          (str (subs href 0 (+ (.indexOf href "#") 1)) result)
-          result))
-      result)))
+  [node datum dattr attr vals]
+  (if (= attr :href)
+    (join "#" (map #(dt/datum-extract datum %) vals))
+    (join " " (map #(dt/datum-extract datum %) vals))))
 
 ;; todo: final param is a result of proto code (POC)
 (defn- attr-write
   [node datum dattr attr]
-  (let [val (datum-key node dattr attr)]
+  (let [vals (datum-keys node dattr attr)]
     (if (and (contains? (:attrs node) attr) (contains? (:attrs node) dattr))
-      (if-let [result (datum-value node datum dattr attr val)]
+      (if-let [result (datum-values node datum dattr attr vals)]
         (assoc-in node [:attrs attr] (detail-write result attr "html"))
         node)
       node)))

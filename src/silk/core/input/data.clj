@@ -20,5 +20,8 @@
   "Determine if the data item we want is in the datum, if not try supplementing
    by loading edn file content."
   [datum item]
-  (let [ext (or (item datum) (item (:content (enhance-datum-content datum))))]
-    (if (.contains (name item) "-html") (URLDecoder/decode ext) ext)))
+  (if-let [ext (or (item datum) (item (:content (enhance-datum-content datum))))]
+    (if (.contains (name item) "-html")
+      (URLDecoder/decode ext)
+      ext)
+    (name item)))
