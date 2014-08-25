@@ -24,10 +24,15 @@
                     (str (:content (:attrs (first t))) ".html"))
                    (sf/template "default.html")))
 
+(defn- title [t] (if t (first (:content (first t))) nil))
+
+(defn- title! [t] (if t (l/content t) (fn [n] n)))
+
 (defn- view-inject [v]
   (let [parsed-view (l/parse v)
         meta-template (ds/template parsed-view)
         template (get-template meta-template)
+        vtitle (title (ds/title parsed-view))
         name (.getName v)]
     {:name name
      :path (sp/relativise-> se/views-path (.getPath v))
@@ -35,6 +40,7 @@
      :priority (el-attr parsed-view  "body" :data-sw-priority)
      :content (l/document
                 (l/parse template)
+                (l/element= :title) (title! vtitle)
                 (l/attr? "data-sw-view")
                   (l/replace (ds/body-content parsed-view))
                 (l/element= :body) (tx/write-template-class meta-template)
