@@ -7,7 +7,7 @@
             [silk.core.input.ast :as ds]
             [silk.core.input.data :as dt]
             [silk.core.transform.path :as sp])
-  (:use [clojure.string :only [join split]]))
+  (:use [clojure.string :only [lower-case join split]]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -21,7 +21,7 @@
       (str (sp/update-extension rel ext) id))
     val))
 
-(defn- text-write
+(defn- write-text->
   [node datum attrib]
   (if-let [attr (keyword (attrib (:attrs node)))]
     (if-let [result (dt/datum-extract datum attr)]
@@ -51,10 +51,10 @@
     (join " " (map #(dt/datum-extract datum %) vals))))
 
 ;; todo: final param is a result of proto code (POC)
-(defn- attr-write
+(defn- write-attr->
   [node datum dattr attr]
   (let [vals (datum-keys node dattr attr)]
-    (if (and (contains? (:attrs node) attr) (contains? (:attrs node) dattr))
+    (if (contains? (:attrs node) dattr)
       (if-let [result (datum-values node datum dattr attr vals)]
         (assoc-in node [:attrs attr] (detail-write result attr "html"))
         node)
@@ -63,13 +63,15 @@
 ;; todo: very proto code (POC)
 (defn- transcend
   [node datum]
-  (let [text-ins (text-write node datum :data-sw-text)
-        text-href (attr-write text-ins datum :data-sw-href :href)
-        text-src (attr-write text-href datum :data-sw-src :src)
-        text-class (attr-write text-src datum :data-sw-class :class)
-        text-title (attr-write text-class datum :data-sw-title :title)
-        text-id (attr-write text-title datum :data-sw-id :id)]
-    text-id))
+  (def n node)
+  (doseq [f
+    (filter #(.startsWith (lower-case (name (first %))) "data-sw-") (:attrs n))]
+    (let [k1 (first f)
+          k2 (keyword (subs (name k1) 8))]
+      (if (= (lower-case (name k1)) "data-sw-text")
+        (def n (write-text-> n datum k1))
+        (def n (write-attr-> n datum k1 k2)))))
+  n)
 
 (defn- eval-element
   [node datum]
@@ -88,14 +90,7 @@
 
 (defn single-component
   [data]
-  (fn [node]
-    (let [text-ins (text-write node (first data) :data-sw-text)
-          text-href (attr-write text-ins (first data) :data-sw-href :href)
-          text-src (attr-write text-href (first data) :data-sw-src :src)
-          text-class (attr-write text-src (first data) :data-sw-class :class)
-          text-title (attr-write text-class (first data) :data-sw-title :title)
-          text-id (attr-write text-title (first data) :data-sw-id :id)]
-      text-id)))
+  (fn [node] (transcend node (first data))))
 
 (defn repeat-component
   [data]
@@ -104,4 +99,4 @@
 (defn write-template-class
   [t]
   (l/add-class
-   (str "silk-template-" (or (:content (:attrs (first t))) "default"))))
+    (str "silk-template-" (or (:content (:attrs (first t))) "default"))))
