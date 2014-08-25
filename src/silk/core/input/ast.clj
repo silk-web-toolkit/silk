@@ -88,6 +88,8 @@
   [v]
   (l/select v (l/and (l/element= :meta) (l/attr= :name "template"))))
 
+(defn title [v] (l/select v (l/element= :title)))
+
 (defn body-content
   "Get sequence of children of a body element."
   [m]
