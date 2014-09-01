@@ -4,6 +4,7 @@
             [silk.core.transform.pipeline :as pipes]
             [silk.core.transform.path :as sp]
             [clojure.java.io :refer [file]]
+            [clojure.data.json :as json]
             [io.aviso.ansi :as aa]
             [io.aviso.exception :as ae]
             [me.rossputin.diskops :as do])
@@ -26,26 +27,10 @@
   (let [files (.list (file d) (filter-file r))]
     (if (seq files) true false)))
 
-(defn- do-detail-pages
-  [path mode]
-  (let [f (file path)
-        name (.getName f)
-        tpl (file
-              (str
-                (do/pwd) (do/fs) "template" (do/fs) "detail" (do/fs) name ".html"))]
-    (when (.exists (file tpl))
-      (let [details (pipes/data-detail-pipeline-> (.listFiles f) tpl mode)]
-        (doseq [d details]
-          (let [parent (.getParent (new File (:path d)))
-                raw (str se/site-path (:path d))
-                save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
-            (when-not (nil? parent) (.mkdirs (File. "site" parent)))
-            (spit save-path (:content d))))))))
-
+; TODO: TBD
 (defn- do-index-pages
   [d]
-  ; TODO: TBD
-  )
+  nil)
 
 
 ;; =============================================================================
@@ -130,11 +115,34 @@
       (when-not (nil? parent) (.mkdirs (File. "site" parent)))
       (spit (str se/site-path (:path t)) (:content t)))))
 
-(defn create-data-driven-pages
+(defn get-data-driven-pipeline
   [mode]
-  (let [data-dirs (sf/get-data-directories)]
-    (doseq [d data-dirs]
-      (if (is-detail? d #".edn") (do-detail-pages d mode) (do-index-pages d)))))
+  (flatten
+    (for [path (sf/get-data-directories)]
+      (if (is-detail? path #".edn")
+        (let [f (file path)
+              tpl (file (str se/templates-details-path (.getName f) ".html"))]
+          (if (.exists (file tpl))
+            (pipes/data-detail-pipeline-> (.listFiles f) tpl mode)
+            nil))
+        (do-index-pages path)))))
+
+(defn create-data-driven-pages
+  [ddp]
+  (doseq [d ddp]
+    (let [parent (.getParent (new File (:path d)))
+          raw (str se/site-path (:path d))
+          save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
+      (when-not (nil? parent) (.mkdirs (File. "site" parent)))
+      (spit save-path (:content d)))))
+
+(defn create-tipue-search-content-file
+  [tp]
+  (let [path (str se/site-path "resource" (do/fs) "js" (do/fs))
+        file (str path "tipuesearch_content.js")]
+    (.mkdirs (File. path))
+    (spit file (str
+      "var tipuesearch=" (json/write-str tp) ";var tipuedrop=tipuesearch;"))))
 
 (defn store-project-dir
   "Writes the current project path and time to the central store."

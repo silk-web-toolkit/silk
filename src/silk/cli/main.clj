@@ -20,12 +20,16 @@
   (io/check-silk-project-structure)
   (io/side-effecting-spin-io)
   (pipes/preprocessor-> (first args))
-  (io/create-view-driven-pages (pipes/view-driven-pipeline-> (first args)))
-  (io/create-data-driven-pages (first args))
+  (let [view (pipes/view-driven-pipeline-> (first args))
+        data (io/get-data-driven-pipeline (first args))
+        text (pipes/text-pipeline-> (concat view data))]
+    (io/create-view-driven-pages view)
+    (io/create-data-driven-pages data)
+    (io/create-tipue-search-content-file text))
   (io/store-project-dir)
   (io/display-spin-end))
 
-(def spin-handled (io/handler spin io/handle-silk-project-exception))
+(def spin-handled (io/handler spin io/trace-silk-project-exception))
 
 (defn- reload-report
   [payload]
@@ -69,7 +73,7 @@
             date-str (.format (new java.text.SimpleDateFormat) date)]
         (println  "Last spun:" date-str path)))))
 
-(def sites-handled (io/handler sites io/handle-silk-project-exception))
+(def sites-handled (io/handler sites io/trace-silk-project-exception))
 
 (defn launch
   [args]

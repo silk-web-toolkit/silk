@@ -6,7 +6,8 @@
             [silk.core.input.file :as sf]
             [silk.core.transform.component :as sc]
             [silk.core.transform.element :as sel]
-            [silk.core.transform.preprocess :as pp]
+            [silk.core.transform.preprocess :as pre]
+            [silk.core.transform.postprocess :as post]
             [silk.core.transform.view :as sv]
             [silk.core.transform.path :as sp]))
 
@@ -19,7 +20,7 @@
   (->> payload
        (map #(sc/process-components true %))))
 
-(defn- post-process
+(defn- process
   [payload mode]
   (->> payload
        (map #(sc/process-components false %))
@@ -37,7 +38,7 @@
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
   [mode]
-  (pp/preprocess-> (pre-process (sv/template-wrap->) mode)))
+  (pre/preprocess-> (pre-process (sv/template-wrap->) mode)))
 
 (defn view-driven-pipeline->
   "Transform data in a pipeline suitable for the majority of standard
@@ -45,10 +46,15 @@
    and relativisation of uri's.
    mode enables different behaviours across different intended environments."
   [mode]
-  (post-process (sv/template-wrap->) mode))
+  (process (sv/template-wrap->) mode))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk
    content based directory contents."
   [p tpl mode]
-  (post-process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
+  (process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
+
+(defn text-pipeline->
+  ""
+  [items]
+  (post/get-text-> items))

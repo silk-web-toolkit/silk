@@ -26,6 +26,9 @@
     "SILK_TEMPLATES_PATH"
     (str (do/pwd) (do/fs) "template" (do/fs))))
 
+(defonce templates-details-path
+  (str templates-path "detail" (do/fs)))
+
 ;; used by quantum-resource in static spins to get component and fallback
 ;; local/env var/shared
 ;; used by server compile time 'component' artefact caching
