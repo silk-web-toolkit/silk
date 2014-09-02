@@ -1,4 +1,4 @@
-(defproject silk "0.5.0"
+(defproject silk "0.6.0-SNAPSHOT"
   :description "Silk static and dynamic publishing toolkit."
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.6.0"]
