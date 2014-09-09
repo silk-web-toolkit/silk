@@ -137,6 +137,7 @@
       (when-not (nil? parent) (.mkdirs (File. "site" parent)))
       (spit save-path (:content d)))))
 
+;; TODO config file?
 (defn create-tipue-search-content-file
   [tp]
   (if (not (nil? tp))
@@ -144,7 +145,11 @@
           file (str path "tipuesearch_content.js")]
       (.mkdirs (File. path))
       (spit file (str
-        "var tipuesearch=" (json/write-str tp) ";var tipuedrop=tipuesearch;")))))
+        "var tipuesearch=" (json/write-str tp)
+        ";var tipuedrop=tipuesearch;"
+        "var tipuesearch_stop_words = [\"and\", \"be\", \"by\", \"do\", \"for\", \"he\", \"how\", \"if\", \"is\", \"it\", \"my\", \"not\", \"of\", \"or\", \"the\", \"to\", \"up\", \"what\", \"when\"];"
+        "var tipuesearch_replace = {\"words\": []};"
+        "var tipuesearch_stem = {\"words\": []};")))))
 
 (defn store-project-dir
   "Writes the current project path and time to the central store."
