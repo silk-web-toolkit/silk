@@ -29,7 +29,7 @@
   (io/store-project-dir)
   (io/display-spin-end))
 
-(def spin-handled (io/handler spin io/trace-silk-project-exception))
+(def spin-handled (io/handler spin io/handle-silk-project-exception))
 
 (defn- reload-report
   [payload]
@@ -73,7 +73,7 @@
             date-str (.format (new java.text.SimpleDateFormat) date)]
         (println  "Last spun:" date-str path)))))
 
-(def sites-handled (io/handler sites io/trace-silk-project-exception))
+(def sites-handled (io/handler sites io/handle-silk-project-exception))
 
 (defn launch
   [args]
