@@ -23,10 +23,12 @@
 (defn get-text->
   "Gets the sites contents."
   [items]
-  {:pages
-    (for [{:keys [nav path content]}
-      (filter #(not-empty (silk-text-node (:content %))) (distinct items))]
-      { :title (if (empty? nav) (sp/basename path) nav)
-        :text (condensed (l/text (first (silk-text-node content))))
-        :tags ""
-        :loc (sp/update-extension path "html")})})
+  (let [f (filter #(not-empty (silk-text-node (:content %))) (distinct items))]
+    (if (.isEmpty f)
+      nil
+      {:pages
+        (for [{:keys [nav path content]} f]
+          { :title (if (empty? nav) (sp/basename path) nav)
+            :text (condensed (l/text (first (silk-text-node content))))
+            :tags ""
+            :loc (sp/update-extension path "html")})})))

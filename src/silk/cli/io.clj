@@ -117,15 +117,16 @@
 
 (defn get-data-driven-pipeline
   [mode]
-  (flatten
-    (for [path (sf/get-data-directories)]
-      (if (is-detail? path #".edn")
-        (let [f (file path)
-              tpl (file (str se/templates-details-path (.getName f) ".html"))]
-          (if (.exists (file tpl))
-            (pipes/data-detail-pipeline-> (.listFiles f) tpl mode)
-            nil))
-        (do-index-pages path)))))
+  (filter #(not (nil?  %))
+    (flatten
+      (for [path (sf/get-data-directories)]
+        (if (is-detail? path #".edn")
+          (let [f (file path)
+                tpl (file (str se/templates-details-path (.getName f) ".html"))]
+            (if (.exists (file tpl))
+              (pipes/data-detail-pipeline-> (.listFiles f) tpl mode)
+              nil))
+          (do-index-pages path))))))
 
 (defn create-data-driven-pages
   [ddp]
@@ -138,11 +139,12 @@
 
 (defn create-tipue-search-content-file
   [tp]
-  (let [path (str se/site-path "resource" (do/fs) "js" (do/fs))
-        file (str path "tipuesearch_content.js")]
-    (.mkdirs (File. path))
-    (spit file (str
-      "var tipuesearch=" (json/write-str tp) ";var tipuedrop=tipuesearch;"))))
+  (if (not (nil? tp))
+    (let [path (str se/site-path "resource" (do/fs) "js" (do/fs))
+          file (str path "tipuesearch_content.js")]
+      (.mkdirs (File. path))
+      (spit file (str
+        "var tipuesearch=" (json/write-str tp) ";var tipuedrop=tipuesearch;")))))
 
 (defn store-project-dir
   "Writes the current project path and time to the central store."
