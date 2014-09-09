@@ -26,7 +26,8 @@
        (map #(sel/relativise-attrs :link :href % mode))
        (map #(sel/relativise-attrs :img :src % mode))
        (map #(sel/relativise-attrs :script :src % mode))
-       (map #(sel/relativise-attrs :a :href % mode))))
+       (map #(sel/relativise-attrs :a :href % mode))
+       (map #(sel/relativise-attrs :form :action % mode))))
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
