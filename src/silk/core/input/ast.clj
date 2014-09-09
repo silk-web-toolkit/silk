@@ -90,6 +90,11 @@
 
 (defn title [v] (l/select v (l/element= :title)))
 
+(defn meta-el
+  "Get a specific meta with name attribue value matching name param."
+  [v name]
+  (l/select v (l/and (l/element= :meta) (l/attr= :name name))))
+
 (defn body-content
   "Get sequence of children of a body element."
   [m]

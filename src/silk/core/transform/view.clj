@@ -28,11 +28,18 @@
 
 (defn- title! [t] (if t (l/content t) (fn [n] n)))
 
+(defn meta-content [t] (if t (get-in (first t) [:attrs :content]) nil))
+
+(defn meta-content! [t] (if t (l/attr :content t) (fn [n] n)))
+
 (defn- view-inject [v]
   (let [parsed-view (l/parse v)
         meta-template (ds/template parsed-view)
         template (get-template meta-template)
         vtitle (title (ds/title parsed-view))
+        meta-key (meta-content (ds/meta-el parsed-view "keywords"))
+        meta-desc (meta-content (ds/meta-el parsed-view "description"))
+        meta-author (meta-content (ds/meta-el parsed-view "author"))
         name (.getName v)]
     {:name name
      :path (sp/relativise-> se/views-path (.getPath v))
@@ -41,6 +48,12 @@
      :content (l/document
                 (l/parse template)
                 (l/element= :title) (title! vtitle)
+                (l/and (l/element= :meta) (l/attr= :name "keywords"))
+                  (meta-content! meta-key)
+                (l/and (l/element= :meta) (l/attr= :name "description"))
+                  (meta-content! meta-desc)
+                (l/and (l/element= :meta) (l/attr= :name "author"))
+                  (meta-content! meta-author)
                 (l/attr? "data-sw-view")
                   (l/replace (ds/body-content parsed-view))
                 (l/element= :body) (tx/write-template-class meta-template)
