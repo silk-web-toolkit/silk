@@ -25,9 +25,18 @@
 
 (defstruct node-st :name :path :content :node-type)
 
+(defn- edn-file?
+  [f]
+  (.endsWith (.toLowerCase (.getName f)) ".edn"))
+
+(defn- edn-files
+  [files dirs?]
+  (filter #(if dirs? (or (.isDirectory %) (edn-file? %)) (edn-file? %)) files))
+
 (defn file-tree [#^File f]
   (if (.isDirectory f)
-    (struct node-st (.getName f) (.getPath f) (vec (map file-tree (.listFiles f))) :directory)
+    (struct node-st (.getName f) (.getPath f)
+      (vec (map file-tree (edn-files (.listFiles f) true))) :directory)
     (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
 
 (defn get-views-raw [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
@@ -75,10 +84,7 @@
   "Get directory metadata under the 'data' directory given a directory d.
    Useful in cases where we do not intend to do anything with file contents."
   [res]
-  (let [raw-file
-        (if (nil? res) '() (file-seq res))
-        artifact (if (> (count raw-file) 1) (rest raw-file) raw-file)]
-    (map #(file-2-map %) artifact)))
+  (map #(file-2-map %) (edn-files (file-seq res) false)))
 
 (defn get-data-meta-tree
   "Same as get-data-meta but work with hierarchy."
