@@ -32,9 +32,10 @@
       ascending)))
 
 (defn- get-component-datasource
-  [{source :data-sw-source limit :data-sw-limit sort :data-sw-sort dir :data-sw-sort-dir}]
-  (if-let [src source]
-    (let [res (sf/data source)
+  [{source :data-sw-source limit :data-sw-limit sort :data-sw-sort
+    dir :data-sw-sort-dir parent :data-sw-parent}]
+  (if-let [src (if parent parent source)]
+    (let [res (sf/data src)
           data (sf/get-data-meta res)
           sorted (if-let [srt sort] (sort-> data srt dir) data)]
       (if-let [lim limit] (take (sc/int-> lim) sorted) sorted))
@@ -95,24 +96,40 @@
   (catch Exception e
     (throw (Exception. (str (.getMessage e) " when creating page " path) e)))))
 
+;; TODO: does not cater for two instances of same component with same datasource
+;;       should it ?
 (defn- swap-component->
   [path raw? c i]
   (if (:data-sw-source i)
-    (l/document
-      (l/parse c)
-      (l/and
-        (l/attr= "data-sw-source" (:data-sw-source i))
-        (l/attr= "data-sw-component" (:data-sw-component i)) )
-      (l/replace (build-component path raw? i)))
+    (if (:data-sw-parent i)
+      (l/document
+        (l/parse c)
+        (l/and
+          (l/attr= "parent" (:data-sw-parent i))
+          (l/attr= "data-sw-component" (:data-sw-component i)))
+        (l/replace (build-component path raw? i)))
+      (l/document
+        (l/parse c)
+        (l/and
+          (l/attr= "data-sw-source" (:data-sw-source i))
+          (l/attr= "data-sw-component" (:data-sw-component i)))
+        (l/replace (build-component path raw? i)))
+      )
     (l/document
       (l/parse c)
       (l/attr= "data-sw-component" (:data-sw-component i))
       (l/replace (build-component path raw? i)))))
 
+(defn- prepare-keys [attrs]
+  (let [sk (select-keys attrs (ds/get-component-attribs))]
+    (if-let [p (:parent attrs)]
+      (assoc (assoc sk :data-sw-parent p) :data-sw-source p)
+      sk)))
+
 (defn- get-comp-ids->
   [t]
   (let [comps (l/select (l/parse (:content t)) (l/attr? "data-sw-component"))]
-    (map #(select-keys (:attrs %) (ds/get-component-attribs)) comps)))
+    (map #(prepare-keys (:attrs %)) comps)))
 
 (defn- process->
   [raw? t ids]

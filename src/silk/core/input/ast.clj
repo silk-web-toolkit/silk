@@ -27,12 +27,12 @@
 
 (defn get-component-attribs
   []
-  [:data-sw-component :data-sw-source :data-sw-type :data-sw-limit :data-sw-sort :data-sw-sort-dir])
+  [:data-sw-component :data-sw-source :data-sw-type :data-sw-limit :data-sw-sort :data-sw-sort-dir :data-sw-parent])
 
 ;; TODO: very proto code (POC)
 (defn get-dynamic-attribs
   []
-  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title :data-sw-id])
+  [:data-sw-text :data-sw-href :data-sw-class :data-sw-src :data-sw-title :data-sw-id :data-sw-parent])
 
 
 ;; =============================================================================
@@ -51,7 +51,8 @@
    (l/attr? :data-sw-src)
    (l/attr? :data-sw-class)
    (l/attr? :data-sw-title)
-   (l/attr? :data-sw-id)))
+   (l/attr? :data-sw-id)
+   (l/attr? :data-sw-parent)))
 
 (defn repeat-orphaned?
   "Is not a descendant of a repeating element type and is a data writeable ?"

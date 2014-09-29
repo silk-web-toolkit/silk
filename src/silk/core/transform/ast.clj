@@ -7,7 +7,8 @@
             [silk.core.input.ast :as ds]
             [silk.core.input.data :as dt]
             [silk.core.transform.path :as sp])
-  (:use [clojure.string :only [lower-case join split]]))
+  (:use [clojure.string :only [lower-case join split]])
+  (:import java.io.File))
 
 ;; =============================================================================
 ;; Helper functions
@@ -56,7 +57,9 @@
   (let [vals (datum-keys node dattr attr)]
     (if (contains? (:attrs node) dattr)
       (if-let [result (datum-values node datum dattr attr vals)]
-        (assoc-in node [:attrs attr] (detail-write result attr "html"))
+        (let [dw (detail-write result attr "html")
+              res (if (= attr :parent) (first (split (.getName (File. dw)) #"\.")) dw)]
+          (assoc-in node [:attrs attr] (detail-write res attr "html")))
         node)
       node)))
 
