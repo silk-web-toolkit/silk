@@ -17,49 +17,41 @@
 (defmacro get-version []
   (System/getProperty "silk.version"))
 
-(defn- filter-file
-  [r]
+(defn- filter-file [r]
   (reify java.io.FilenameFilter
     (accept [_ d name] (not (nil? (re-find r name))))))
 
-(defn- is-detail?
-  [d r]
+(defn- is-detail? [d r]
   (let [files (.list (file d) (filter-file r))]
     (if (seq files) true false)))
 
 ; TODO: TBD
-(defn- do-index-pages
-  [d]
-  nil)
+(defn- do-index-pages [d] nil)
 
 
 ;; =============================================================================
 ;; Ugly side effecting IO
 ;; =============================================================================
 
-(defn cli-app-banner-display
-  []
+(defn cli-app-banner-display []
   (println      "    _ _ _")
   (println      " __(_) | |__")
   (println      "(_-< | | / /")
   (println (str "/__/_|_|_\\_\\ " "v" (get-version)))
   (println ""))
 
-(defn display-spin-start
-  []
-  (println "Spinning your site..."))
+(defn display-spin-start [] (println "Spinning your site..."))
 
-(defn display-spin-end
-  []
-  (println (str (aa/bold-green "SUCCESS: ") (aa/italic "Site spinning is complete, we hope you like it."))))
+(defn display-spin-end []
+  (println
+    (str (aa/bold-green "SUCCESS: ")
+         (aa/italic "Site spinning is complete, we hope you like it."))))
 
-(defn display-files-changed
-  [files]
+(defn display-files-changed [files]
   (println "Files changed in " (do/pwd))
   (doseq [file files] (println (sp/relativise-> (do/pwd) (.getPath file)))))
 
-(defn side-effecting-spin-io
-  []
+(defn side-effecting-spin-io []
   (when (do/exists-dir? "site") (do/delete-directory "site"))
   (when (do/exists-dir? se/sw-path) (do/delete-directory se/sw-path))
   (.mkdir (File. "site"))
@@ -67,36 +59,28 @@
   (when (do/exists-dir? "resource") (do/copy-recursive "resource" "site"))
   (when (do/exists-dir? "meta") (do/copy-file-children "meta" "site")))
 
-(defn is-silk-project?
-  []
-  (and
-   (do/exists-dir? "view") (do/exists-dir? "template")))
+(defn is-silk-project? []
+  (and (do/exists-dir? "view") (do/exists-dir? "template")))
 
 ;; last spun time and silk projects both live in silk home
-(defn is-silk-configured?
-  []
-  (do/exists-dir? se/silk-home))
+(defn is-silk-configured? [] (do/exists-dir? se/silk-home))
 
-(defn check-silk-configuration
-  []
+(defn check-silk-configuration []
   (if (not (is-silk-configured?))
     (do
       (println
         (aa/bold-red "WARNING: Creating missing shared directory"))
         (.mkdirs (File. se/silk-home)))))
 
-(defn check-silk-project-structure
-  []
+(defn check-silk-project-structure []
   (if (not (is-silk-project?))
     (do
       (throw (IllegalArgumentException. "Not a Silk project, a directory may be missing - template or view ?")))))
 
-(defn handler
-  [f & handlers]
+(defn handler [f & handlers]
   (reduce (fn [handled h] (partial h handled)) f (reverse handlers)))
 
-(defn handle-silk-project-exception
-  [f & args]
+(defn handle-silk-project-exception [f & args]
   (try
     (apply f args)
     (catch IllegalArgumentException iex
@@ -106,19 +90,16 @@
       (println (str (aa/bold-red "ERROR: ") (aa/italic "Sorry, there was a problem, either a component or datasource is missing or this is not a Silk project ?")))
       (println (str (aa/bold-red "CAUSE: ") (aa/italic (.getMessage ex)))))))
 
-(defn trace-silk-project-exception
-  [f & args]
+(defn trace-silk-project-exception [f & args]
   (try (apply f args) (catch Exception iex (ae/write-exception iex))))
 
-(defn create-view-driven-pages
-  [vdp]
+(defn create-view-driven-pages [vdp]
   (doseq [t vdp]
     (let [parent (.getParent (new File (:path t)))]
       (when-not (nil? parent) (.mkdirs (File. "site" parent)))
       (spit (str se/site-path (:path t)) (:content t)))))
 
-(defn get-data-driven-pipeline
-  [mode]
+(defn get-data-driven-pipeline [mode]
   (filter #(not (nil?  %))
     (flatten
       (for [path (sf/get-data-directories)]
@@ -130,8 +111,7 @@
               nil))
           (do-index-pages path))))))
 
-(defn create-data-driven-pages
-  [ddp]
+(defn create-data-driven-pages [ddp]
   (doseq [d ddp]
     (let [parent (.getParent (new File (:path d)))
           raw (str se/site-path (:path d))
@@ -140,8 +120,7 @@
       (spit save-path (:content d)))))
 
 ;; TODO config file?
-(defn create-tipue-search-content-file
-  [tp]
+(defn create-tipue-search-content-file [tp]
   (if (not (nil? tp))
     (let [path (str se/site-path "resource" (do/fs) "js" (do/fs))
           file (str path "tipuesearch_content.js")]
