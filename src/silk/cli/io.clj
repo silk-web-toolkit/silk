@@ -95,8 +95,8 @@
 
 (defn create-view-driven-pages [vdp]
   (doseq [t vdp]
-    (let [parent (.getParent (new File (:path t)))]
-      (when-not (nil? parent) (.mkdirs (File. "site" parent)))
+    (let [parent (.getParent (File. (:path t)))]
+      (when parent (.mkdirs (File. "site" parent)))
       (spit (str se/site-path (:path t)) (:content t)))))
 
 (defn get-data-driven-pipeline [mode]
@@ -116,7 +116,7 @@
     (let [parent (.getParent (new File (:path d)))
           raw (str se/site-path (:path d))
           save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
-      (when-not (nil? parent) (.mkdirs (File. "site" parent)))
+      (when parent (.mkdirs (File. "site" parent)))
       (spit save-path (:content d)))))
 
 ;; TODO config file?
