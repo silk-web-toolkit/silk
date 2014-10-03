@@ -81,7 +81,9 @@
   []
   (if (not (is-silk-configured?))
     (do
-      (throw (IllegalArgumentException. "Silk is not configured, please ensure your SILK_PATH is setup and contains a components and data directory.")))))
+      (println
+        (aa/bold-red "WARNING: Creating missing shared directory"))
+        (.mkdirs (File. se/silk-home)))))
 
 (defn check-silk-project-structure
   []
