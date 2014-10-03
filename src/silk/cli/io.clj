@@ -59,21 +59,21 @@
   (when (do/exists-dir? "resource") (do/copy-recursive "resource" "site"))
   (when (do/exists-dir? "meta") (do/copy-file-children "meta" "site")))
 
-(defn is-silk-project? []
+(defn silk-project? []
   (and (do/exists-dir? "view") (do/exists-dir? "template")))
 
 ;; last spun time and silk projects both live in silk home
-(defn is-silk-configured? [] (do/exists-dir? se/silk-home))
+(defn silk-configured? [] (do/exists-dir? se/silk-home))
 
 (defn check-silk-configuration []
-  (if (not (is-silk-configured?))
+  (if (not (silk-configured?))
     (do
       (println
         (aa/bold-red "WARNING: Creating missing shared directory"))
         (.mkdirs (File. se/silk-home)))))
 
 (defn check-silk-project-structure []
-  (if (not (is-silk-project?))
+  (if (not (silk-project?))
     (do
       (throw (IllegalArgumentException. "Not a Silk project, a directory may be missing - template or view ?")))))
 
