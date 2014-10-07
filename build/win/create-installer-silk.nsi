@@ -31,8 +31,8 @@ CreateShortCut "$SMPROGRAMS\Silk\Uninstall Silk.lnk" "$INSTDIR\uninstall.exe"
 
 Exec 'setx PATH "%PATH%;$INSTDIR\bin\"'
 
-WriteRegStr HKLM "Software\Microsoft\Windows\0.5.0\Uninstall\Silk" "DisplayName" "Silk (remove only)"
-WriteRegStr HKLM "Software\Microsoft\Windows\0.5.0\Uninstall\Silk" "Uninstall" "$INSTDIR\uninstall.exe"
+WriteRegStr HKLM "Software\Microsoft\Windows\0.6.0\Uninstall\Silk" "DisplayName" "Silk (remove only)"
+WriteRegStr HKLM "Software\Microsoft\Windows\0.6.0\Uninstall\Silk" "Uninstall" "$INSTDIR\uninstall.exe"
 
 MessageBox MB_OK "Silk was successfully installed."
 
@@ -40,7 +40,7 @@ SectionEnd
 
 ; ----------------------------------------------------------------------------------
 ; ************************** SECTION FOR UNINSTALLING ******************************
-; ---------------------------------------------------------------------------------- 
+; ----------------------------------------------------------------------------------
 
 Section "Uninstall"
 
@@ -64,6 +64,6 @@ Delete "$SMPROGRAMS\Silk\Uninstall Silk.lnk"
 RMDIR "$SMPROGRAMS\Silk"
 
 DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Silk"
-DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\0.5.0\Uninstall\Silk"
+DeleteRegKey HKEY_LOCAL_MACHINE "SOFTWARE\Microsoft\Windows\0.6.0\Uninstall\Silk"
 
 SectionEnd

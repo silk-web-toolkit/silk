@@ -18,7 +18,7 @@ function download_tarball {
      echo $(tput setaf 2)"--> Downloading Silk..."$(tput sgr0)
      echo ""
 
-     $HTTP_CLIENT https://github.com/silk-web-toolkit/silk/releases/download/0.5.0/silk.tgz -o $HOME/bin/silk.tgz
+     $HTTP_CLIENT https://github.com/silk-web-toolkit/silk/releases/download/0.6.0/silk.tgz -o $HOME/bin/silk.tgz
      tar xf $HOME/bin/silk.tgz -C $HOME/bin
      rm $HOME/bin/silk.tgz
 }

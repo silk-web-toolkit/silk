@@ -11,7 +11,9 @@ RPM
 ---
 
 (assuming you are in the build directory)
+
 (substitute your version for the example below)
+
 ./build-rpm.sh 0.5.0
 
 
@@ -19,5 +21,7 @@ DEB
 ---
 
 (assuming you are in the build directory)
+
 (substitute your version for the example below)
+
 ./build-deb.sh 0.5.0
