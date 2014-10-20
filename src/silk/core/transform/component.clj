@@ -34,7 +34,7 @@
 (defn- get-component-datasource
   [{source :data-sw-source limit :data-sw-limit sort :data-sw-sort
     dir :data-sw-sort-dir parent :data-sw-parent}]
-  (if-let [src (if parent parent source)]
+  (if-let [src (if parent (str parent "/" source) source)]
     (let [res (sf/data src)
           data (sf/get-data-meta res)
           sorted (if-let [srt sort] (sort-> data srt dir) data)]
@@ -123,7 +123,7 @@
 (defn- prepare-keys [attrs]
   (let [sk (select-keys attrs (ds/get-component-attribs))]
     (if-let [p (:parent attrs)]
-      (assoc (assoc sk :data-sw-parent p) :data-sw-source p)
+      (assoc (assoc sk :data-sw-parent p) :data-sw-source (:data-sw-source attrs))
       sk)))
 
 (defn- get-comp-ids->
