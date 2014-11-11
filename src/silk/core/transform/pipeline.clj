@@ -16,19 +16,19 @@
 ;; =============================================================================
 
 (defn- pre-process
-  [payload mode]
+  [payload]
   (->> payload
        (map #(sc/process-components true %))))
 
 (defn- process
-  [payload mode]
+  [payload live?]
   (->> payload
        (map #(sc/process-components false %))
-       (map #(sel/relativise-attrs :link :href % mode))
-       (map #(sel/relativise-attrs :img :src % mode))
-       (map #(sel/relativise-attrs :script :src % mode))
-       (map #(sel/relativise-attrs :a :href % mode))
-       (map #(sel/relativise-attrs :form :action % mode))))
+       (map #(sel/relativise-attrs :link :href % live?))
+       (map #(sel/relativise-attrs :img :src % live?))
+       (map #(sel/relativise-attrs :script :src % live?))
+       (map #(sel/relativise-attrs :a :href % live?))
+       (map #(sel/relativise-attrs :form :action % live?))))
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
@@ -38,16 +38,16 @@
   "Transform data in a pipeline into a data source edn files.
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
-  [mode]
-  (pre/preprocess-> (pre-process (sv/template-wrap->) mode)))
+  []
+  (pre/preprocess-> (pre-process (sv/template-wrap->))))
 
 (defn view-driven-pipeline->
   "Transform data in a pipeline suitable for the majority of standard
    view presentation cases, including template wrapping, component injection
    and relativisation of uri's.
    mode enables different behaviours across different intended environments."
-  [mode]
-  (process (sv/template-wrap->) mode))
+  [live?]
+  (process (sv/template-wrap->)  live?))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk

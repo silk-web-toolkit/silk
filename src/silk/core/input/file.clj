@@ -39,7 +39,8 @@
       (vec (map file-tree (edn-files (.listFiles f) true))) :directory)
     (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
 
-(defn get-views-raw [] (remove #(.isDirectory %) (file-seq (file se/views-path))))
+(defn get-views-raw []
+  (remove #(.isDirectory %) (file-seq (file (se/views-path)))))
 
 
 ;; =============================================================================
@@ -50,7 +51,7 @@
   "Return a Silk template template from the silk template directory given a filename f.
    A Silk template is raw markup."
   [f]
-  (file (str se/templates-path f)))
+  (file (str (se/templates-path) f)))
 
 (defn quantum-resource
   "Return a Silk resource which may be in one of several places given a path.
@@ -59,7 +60,7 @@
    an env var root or silk home."
   [rel-path local-root system-root]
   (let [item-path (str local-root (do/fs) rel-path)
-        local-res-path (str (do/pwd) (do/fs) item-path)
+        local-res-path (str se/current-project (do/fs) item-path)
         local-file (file local-res-path)
         reserve (system-root-resource rel-path system-root)
         home (file (str se/silk-home (do/fs) item-path))
@@ -98,7 +99,7 @@
    Assume for now we will only generate detail pages from local data.  Unsure how
    to resolve shared data... it must not overwrite local etc."
   []
-  (->> (get-data-meta (file (do/pwd) "data"))
+  (->> (get-data-meta (file "data"))
      (map #(file (:sw/path %)))
      (filter #(.isFile %))
      (map #(.getParent %))

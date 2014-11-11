@@ -8,6 +8,8 @@
 ;; Environmental properties, see namespace comment
 ;; =============================================================================
 
+(def ^:dynamic current-project "")
+
 (defonce os (System/getProperty "os.name"))
 
 (defonce user-home (System/getProperty (str "user.home")))
@@ -21,10 +23,10 @@
 (defonce spun-projects-file (file (str silk-home (do/fs) "spun-projects.txt")))
 
 ;; configured to work with static spins and server compile time 'page' artefact caching
-(defonce templates-path
+(defn templates-path []
   (get (System/getenv)
     "SILK_TEMPLATES_PATH"
-    (str (do/pwd) (do/fs) "template" (do/fs))))
+    (str current-project (do/fs) "template" (do/fs))))
 
 (defonce templates-details-path
   (str templates-path "detail" (do/fs)))
@@ -37,9 +39,11 @@
     "SILK_COMPONENTS_PATH"
     (str silk-home (do/fs) "components")))
 
-(defonce views-path (str (do/pwd) (do/fs) "view" (do/fs)))
+(defn views-path [] (str current-project (do/fs) "view" (do/fs)))
 
-(defonce site-path (str (do/pwd) (do/fs) "site" (do/fs)))
+(defn site-path [] (str current-project (do/fs) "site" (do/fs)))
+
+(defn project-data-path [] (str current-project (do/fs) "data" (do/fs)))
 
 (defonce data-path (str silk-home (do/fs) "data"))
 

@@ -117,4 +117,4 @@
            (:content (sel/relativise-attrs :a :href
                                    {:path (.getPath ~s)
                                     :content (l/document html# ~@fns)}
-                                   "live")))))))
+                                   true)))))))

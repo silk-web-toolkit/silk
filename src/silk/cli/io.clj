@@ -14,9 +14,6 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defmacro get-version []
-  (System/getProperty "silk.version"))
-
 (defn- filter-file [r]
   (reify java.io.FilenameFilter
     (accept [_ d name] (not (nil? (re-find r name))))))
@@ -33,13 +30,6 @@
 ;; Ugly side effecting IO
 ;; =============================================================================
 
-(defn cli-app-banner-display []
-  (println      "    _ _ _")
-  (println      " __(_) | |__")
-  (println      "(_-< | | / /")
-  (println (str "/__/_|_|_\\_\\ " "v" (get-version)))
-  (println ""))
-
 (defn display-spin-start [] (println "Spinning your site..."))
 
 (defn display-spin-end []
@@ -48,8 +38,9 @@
          (aa/italic "Site spinning is complete, we hope you like it."))))
 
 (defn display-files-changed [files]
-  (println "Files changed in " (do/pwd))
-  (doseq [file files] (println (sp/relativise-> (do/pwd) (.getPath file)))))
+  (println "Files changed in " se/current-project)
+  (doseq [file files]
+    (println (sp/relativise-> se/current-project (.getCanonicalPath file)))))
 
 (defn side-effecting-spin-io []
   (when (do/exists-dir? "site") (do/delete-directory "site"))
@@ -60,7 +51,7 @@
   (when (do/exists-dir? "meta") (do/copy-file-children "meta" "site")))
 
 (defn silk-project? []
-  (and (do/exists-dir? "view") (do/exists-dir? "template")))
+  (and (do/exists-dir? (se/views-path)) (do/exists-dir? (se/templates-path))))
 
 ;; last spun time and silk projects both live in silk home
 (defn silk-configured? [] (do/exists-dir? se/silk-home))
@@ -97,9 +88,9 @@
   (doseq [t vdp]
     (let [parent (.getParent (File. (:path t)))]
       (when parent (.mkdirs (File. "site" parent)))
-      (spit (str se/site-path (:path t)) (:content t)))))
+      (spit (str (se/site-path) (:path t)) (:content t)))))
 
-(defn get-data-driven-pipeline [mode]
+(defn get-data-driven-pipeline [live?]
   (filter #(not (nil?  %))
     (flatten
       (for [path (sf/get-data-directories)]
@@ -107,14 +98,14 @@
           (let [f (file path)
                 tpl (file (str se/templates-details-path (.getName f) ".html"))]
             (if (.exists (file tpl))
-              (pipes/data-detail-pipeline-> (.listFiles f) tpl mode)
+              (pipes/data-detail-pipeline-> (.listFiles f) tpl live?)
               nil))
           (do-index-pages path))))))
 
 (defn create-data-driven-pages [ddp]
   (doseq [d ddp]
     (let [parent (.getParent (new File (:path d)))
-          raw (str se/site-path (:path d))
+          raw (str (se/site-path) (:path d))
           save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
       (when parent (.mkdirs (File. "site" parent)))
       (spit save-path (:content d)))))
@@ -122,7 +113,7 @@
 ;; TODO config file?
 (defn create-tipue-search-content-file [tp]
   (if (not (nil? tp))
-    (let [path (str se/site-path "resource" (do/fs) "js" (do/fs))
+    (let [path (str (se/site-path) "resource" (do/fs) "js" (do/fs))
           file (str path "tipuesearch_content.js")]
       (.mkdirs (File. path))
       (spit file (str
@@ -140,7 +131,7 @@
     (let [path (.getPath f)
           millis (.getTime (new java.util.Date))
           old (with-open [rdr (clojure.java.io/reader path)] (doall (line-seq rdr)))
-          removed (remove #(.contains % (str (do/pwd) ",")) old)
+          removed (remove #(.contains % (str se/current-project ",")) old)
           formatted (apply str (map #(str % "\n") removed))
-          updated (conj [(str (do/pwd) "," millis "\n")]  formatted)]
+          updated (conj [(str se/current-project "," millis "\n")]  formatted)]
       (spit path (apply str updated)))))
