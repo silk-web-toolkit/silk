@@ -33,7 +33,7 @@
 (defn- get-component-datasource
   [{source :data-sw-source limit :data-sw-limit sort :data-sw-sort
     dir :data-sw-sort-dir parent :data-sw-parent}]
-  (if-let [src (if parent (str parent "/" source) source)]
+  (if-let [src (if parent (str "protean-api/" parent "/" source) source)]
     (let [res (sf/data src)
           data (sf/get-data-meta res)
           sorted (if-let [srt sort] (sort-> data srt dir) data)]
