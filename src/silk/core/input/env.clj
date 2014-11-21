@@ -39,9 +39,13 @@
     "SILK_COMPONENTS_PATH"
     (str silk-home (do/fs) "components")))
 
-(defn views-path [] (str current-project (do/fs) "view" (do/fs)))
+(defn meta-path [] (str current-project (do/fs) "meta" (do/fs)))
+
+(defn resource-path [] (str current-project (do/fs) "resource" (do/fs)))
 
 (defn site-path [] (str current-project (do/fs) "site" (do/fs)))
+
+(defn views-path [] (str current-project (do/fs) "view" (do/fs)))
 
 (defn project-data-path [] (str current-project (do/fs) "data" (do/fs)))
 

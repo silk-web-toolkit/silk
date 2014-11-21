@@ -43,12 +43,13 @@
     (println (sp/relativise-> se/current-project (.getCanonicalPath file)))))
 
 (defn side-effecting-spin-io []
-  (when (do/exists-dir? "site") (do/delete-directory "site"))
-  (when (do/exists-dir? se/sw-path) (do/delete-directory se/sw-path))
-  (.mkdir (File. "site"))
-  (.mkdir (File. se/sw-path))
-  (when (do/exists-dir? "resource") (do/copy-recursive "resource" "site"))
-  (when (do/exists-dir? "meta") (do/copy-file-children "meta" "site")))
+  (let [s (se/site-path) r (se/resource-path) m (se/meta-path)]
+    (when (do/exists-dir? s) (do/delete-directory s))
+    (when (do/exists-dir? se/sw-path) (do/delete-directory se/sw-path))
+    (.mkdir (File. s))
+    (.mkdir (File. se/sw-path))
+    (when (do/exists-dir? r) (do/copy-recursive r s))
+    (when (do/exists-dir? m) (do/copy-file-children m s))))
 
 (defn silk-project? []
   (and (do/exists-dir? (se/views-path)) (do/exists-dir? (se/templates-path))))
@@ -87,7 +88,7 @@
 (defn create-view-driven-pages [vdp]
   (doseq [t vdp]
     (let [parent (.getParent (File. (:path t)))]
-      (when parent (.mkdirs (File. "site" parent)))
+      (when parent (.mkdirs (File. (se/site-path) parent)))
       (spit (str (se/site-path) (:path t)) (:content t)))))
 
 (defn get-data-driven-pipeline [live?]
@@ -107,7 +108,7 @@
     (let [parent (.getParent (new File (:path d)))
           raw (str (se/site-path) (:path d))
           save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
-      (when parent (.mkdirs (File. "site" parent)))
+      (when parent (.mkdirs (File. (se/site-path) parent)))
       (spit save-path (:content d)))))
 
 ;; TODO config file?
