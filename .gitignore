@@ -1,9 +1,11 @@
 /classes
+/data
 /lib
 /target
+/rpmbuild
 .DS_Store
 *.jar
+.lein-repl-history
 .lein-deps-sum
 .lein-repl-history
 pom.xml
-
