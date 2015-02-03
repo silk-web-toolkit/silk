@@ -1,92 +1,88 @@
 (ns silk.cli.main
-  (:require [me.rossputin.diskops :as do]
-            [silk.core.input.env :as se]
-            [silk.core.input.file :as sf]
-            [silk.core.transform.pipeline :as pipes]
-            [watchtower.core :as watch]
-            [silk.cli.io :as io])
-  (:use [clojure.string :only [split]])
-  (import java.io.File)
+  "A basic command line interface for Protean."
+  (:require [clojure.string :as s]
+            [clojure.java.io :refer [file]]
+            [clojure.tools.cli :refer [parse-opts]]
+            [io.aviso.ansi :as aa]
+            [silk.cli.api :as api]
+            [silk.cli.interface :as i])
   (:gen-class))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- spin
-  [args]
-  (io/display-spin-start)
-  (io/check-silk-configuration)
-  (io/check-silk-project-structure)
-  (io/side-effecting-spin-io)
-  (pipes/preprocessor-> (first args))
-  (let [view (pipes/view-driven-pipeline-> (first args))
-        data (io/get-data-driven-pipeline (first args))
-        text (pipes/text-pipeline-> (concat view data))]
-    (io/create-view-driven-pages view)
-    (io/create-data-driven-pages data)
-    (io/create-tipue-search-content-file text))
-  (io/store-project-dir)
-  (io/display-spin-end))
+(defmacro get-version []
+  (System/getProperty "silk.version"))
 
-(def spin-handled (io/handler spin io/handle-silk-project-exception))
+(defn- cli-banner []
+  (println      "    _ _ _")
+  (println      " __(_) | |__")
+  (println      "(_-< | | / /")
+  (println (str "/__/_|_|_\\_\\ " "v" (get-version)))
+  (println ""))
 
-(defn- reload-report
-  [payload]
-  (io/display-files-changed payload)
-  (spin-handled ["spin"])
-  (println "Press enter to exit"))
+(defn- nice-keys [m] (into {} (for [[k v] m] [(keyword k) v])))
 
-(defonce hidden-paths (str (do/pwd) (do/fs) "."))
+(defn- nice-vals [v] (into [] (map #(keyword %) v)))
 
-(defn- ignore-directories
-  "A file filter that removes Silk Site and hidden directories."
-  [f]
-  (not (or (.startsWith (.getCanonicalPath f) se/site-path)
-              (.startsWith (.getCanonicalPath f) hidden-paths))))
+(defn- sane-corpus [m] (-> m nice-keys (update-in [:commands] nice-vals)))
 
-(defn- reload
-  []
-  (future (watch/watcher [(do/pwd)]
-    (watch/rate 500) ;; poll every 500ms
-    (watch/file-filter watch/ignore-dotfiles) ;; ignore any dotfiles
-    (watch/file-filter ignore-directories) ;; ignore file in Silk site directory
-    (watch/notify-on-start? true)   ;; Determines whether notifications are made
-    (watch/on-modify #(reload-report %))
-    (watch/on-add #(reload-report %))
-    (watch/on-delete #(reload-report %))))
+(def cli-options
+   [["-a" "--auto" "(Auto spin on file updates)"]
+    ["-d" "--directory DIRECTORY" "Path to site"]
+    ["-l" "--live" "Live relativisation paths"]
+    ["-t" "--trace" "Display error stack trace (For development)"]
+    ["-h" "--help"]])
 
-  (loop [input (read-line)]
-    (when-not (= "\n" input)
-      (System/exit 0)
-      (recur (read-line)))))
+(defn- usage-hud [options-summary]
+  (->> [""
+        "Usage: silk [options] action"
+        ""
+        "Please note if you do not specify a directory Silk will spin/reload the current one."
+        ""
+        "Options:"
+        options-summary
+        ""
+        "Actions:"
+        "sites                   (List spun Sites)"
+        "spin                    -d mysite (Spin once)"
+        "reload                  -d mysite (Auto spin on file updates)"]
+       (s/join \newline)))
 
-(defn sites
-  []
-  (io/check-silk-configuration)
-  (println "Your Silk sites are : ")
-  (with-open [rdr (clojure.java.io/reader se/spun-projects-file)]
-    (doseq [line (line-seq rdr)]
-      (let [splitStr (split line #",")
-            path (first splitStr)
-            date (new java.util.Date (read-string (second splitStr)))
-            date-str (.format (new java.text.SimpleDateFormat) date)]
-        (println  "Last spun:" date-str path)))))
+(defn- usage [options-summary] (cli-banner) (usage-hud options-summary))
 
-(def sites-handled (io/handler sites io/handle-silk-project-exception))
+(defn- usage-exit [options-summary] (usage-hud options-summary))
 
-(defn launch
-  [args]
-  (io/cli-app-banner-display)
-  (cond
-   (= (first args) "reload") (reload)
-   (= (first args) "sites")  (sites-handled)
-   :else (spin-handled args)))
+(defn- error-msg [errors]
+  (str "The following errors occurred while parsing your command:\n\n"
+       (s/join \newline errors)))
+
+(defn- exit [status msg] (println msg) (System/exit status))
 
 ;; =============================================================================
 ;; Application entry point
 ;; =============================================================================
 
-(defn -main
-  [& args]
-  (launch args))
+(defn- bomb [summary] (exit 0 (usage summary))) ; exit nicely and print usage
+
+(defn- handle-errors
+  [{:keys [name directory] :as options} arguments errors summary]
+  (let [cmd (first arguments)]
+    (cond
+      (:help options) (bomb summary)
+      (not= (count arguments) 1) (exit 1 (usage summary))
+      errors (exit 1 (error-msg errors)))))
+
+(defn -main [& args]
+  (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
+        cmd (first arguments)
+        auto? (:auto options)
+        directory (:directory options)
+        live? (:live options)
+        trace? (:trace options)]
+    (handle-errors options arguments errors summary)
+    (cond
+      (= cmd i/sites) (api/sites-handled)
+      (= cmd i/spin)  (api/spin-or-reload auto? directory live? trace?)
+      :else (exit 1 (usage-exit summary)))))
