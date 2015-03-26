@@ -5,7 +5,7 @@
                  [com.taoensso/timbre "3.3.1"]
                  [pathetic "0.5.1"]
                  [me.raynes/laser "1.1.1"]
-                 [me.rossputin/diskops "0.2.1"]
+                 [me.rossputin/diskops "0.4.0"]
                  [org.clojure/tools.cli "0.3.1"]
                  [org.clojars.zcaudate/watchtower "0.1.2"]
                  [io.aviso/pretty "0.1.12"]
