@@ -58,7 +58,7 @@
   "Is not a descendant of a repeating element type and is a data writeable ?"
   []
   (l/and
-    (l/negate (l/descendant-of (l/element= :table) (l/attr? :data-sw-text)))
+    (l/negate (l/descendant-of (l/element= :tbody) (l/attr? :data-sw-text)))
     (l/negate (l/descendant-of (l/element= :ul)    (l/attr? :data-sw-text)))))
 
 (defn singular?
@@ -75,7 +75,9 @@
 
 (defn repeat-node?
   []
-  (l/or (l/element= :tr) (l/element= :li)))
+  (l/or
+    (l/and (l/element= :tr) (l/descendant-of (l/element= :tbody) (l/any)))
+    (l/element= :li)))
 
 (defn repeating?
   []
