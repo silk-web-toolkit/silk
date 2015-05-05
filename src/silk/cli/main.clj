@@ -33,7 +33,8 @@
     ["-d" "--directory DIRECTORY" "Path to site"]
     ["-l" "--live" "Live relativisation paths"]
     ["-t" "--trace" "Display error stack trace (For development)"]
-    ["-h" "--help"]])
+    ["-h" "--help"]
+    ["-v" "--version"]])
 
 (defn- usage-hud [options-summary]
   (->> [""
@@ -46,8 +47,7 @@
         ""
         "Actions:"
         "sites                   (List spun Sites)"
-        "spin                    -d mysite (Spin once)"
-        "reload                  -d mysite (Auto spin on file updates)"]
+        "spin                    -d mysite (Spin once)"]
        (s/join \newline)))
 
 (defn- usage [options-summary] (cli-banner) (usage-hud options-summary))
@@ -71,6 +71,7 @@
   (let [cmd (first arguments)]
     (cond
       (:help options) (bomb summary)
+      (:version options) (exit 0 (get-version))
       (not= (count arguments) 1) (exit 1 (usage summary))
       errors (exit 1 (error-msg errors)))))
 
@@ -80,7 +81,9 @@
         auto? (:auto options)
         directory (:directory options)
         live? (:live options)
-        trace? (:trace options)]
+        trace? (:trace options)
+        help? (:help options)
+        version? (:version options)]
     (handle-errors options arguments errors summary)
     (cond
       (= cmd i/sites) (api/sites-handled)
