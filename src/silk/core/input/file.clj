@@ -51,7 +51,7 @@
   "Return a Silk template template from the silk template directory given a filename f.
    A Silk template is raw markup."
   [f]
-  (file (str (se/templates-path) f)))
+  (file (str (se/project-templates-path) f)))
 
 (defn quantum-resource
   "Return a Silk resource which may be in one of several places given a path.
@@ -99,8 +99,8 @@
    Assume for now we will only generate detail pages from local data.  Unsure how
    to resolve shared data... it must not overwrite local etc."
   []
-  (->> (get-data-meta (file "data"))
-     (map #(file (:sw/path %)))
-     (filter #(.isFile %))
-     (map #(.getParent %))
-     distinct))
+  (->> (get-data-meta (file (se/project-data-path)))
+       (map #(file (:sw/path %)))
+       (filter #(.isFile %))
+       (map #(.getParent %))
+       distinct))
