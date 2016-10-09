@@ -48,7 +48,7 @@
 ;; =============================================================================
 
 (defn template
-  "Return a Silk template template from the silk template directory given a filename f.
+  "Return a Silk template from the silk template directory given a filename f.
    A Silk template is raw markup."
   [f]
   (file (str (se/project-templates-path) f)))

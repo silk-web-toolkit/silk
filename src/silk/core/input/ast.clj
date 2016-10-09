@@ -87,12 +87,6 @@
 ;; high level selectors - Silk domain
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn template
-  [v]
-  (l/select v (l/and (l/element= :meta) (l/attr= :name "template"))))
-
-(defn title [v] (l/select v (l/element= :title)))
-
 (defn meta-el
   "Get a specific meta with name attribue value matching name param."
   [v name]

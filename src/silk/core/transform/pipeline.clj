@@ -15,20 +15,30 @@
 ;; Helper functions
 ;; =============================================================================
 
+; (defn- pre-process
+;   [payload]
+;   (->> payload
+;        (map #(sc/process-components true %))))
+;
+; (defn- process
+;   [payload live?]
+;   (->> payload
+;        (map #(sc/process-components false %))
+;        (map #(sel/relativise-attrs :link :href % live?))
+;        (map #(sel/relativise-attrs :img :src % live?))
+;        (map #(sel/relativise-attrs :script :src % live?))
+;        (map #(sel/relativise-attrs :a :href % live?))
+;        (map #(sel/relativise-attrs :form :action % live?))))
+
+
 (defn- pre-process
   [payload]
-  (->> payload
-       (map #(sc/process-components true %))))
+  (->> payload))
 
 (defn- process
   [payload live?]
-  (->> payload
-       (map #(sc/process-components false %))
-       (map #(sel/relativise-attrs :link :href % live?))
-       (map #(sel/relativise-attrs :img :src % live?))
-       (map #(sel/relativise-attrs :script :src % live?))
-       (map #(sel/relativise-attrs :a :href % live?))
-       (map #(sel/relativise-attrs :form :action % live?))))
+  (->> payload))
+
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment

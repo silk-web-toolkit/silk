@@ -7,7 +7,15 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn read-datum [datum] (edn/read-string (slurp (:sw/path datum))))
+(def cached-datums [])
+
+(defn read-datum [datum]
+  (if-let [f (seq (filter #(= (:path %) (:sw/path datum)) cached-datums))]
+    (:content (first f))
+    (let [p (:sw/path datum)
+          c (edn/read-string (slurp p))]
+      (def cached-datums (conj cached-datums {:path p :content c}))
+      c)))
 
 (defn- enhance-datum-content [datum] (assoc datum :content (read-datum datum)))
 
