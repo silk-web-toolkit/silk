@@ -1,15 +1,12 @@
 (ns silk.core.transform.pipeline
   "Pipeline abstractions.
    Principally view driven."
-  (:require [me.raynes.laser :as l]
-            [silk.core.input.env :as se]
-            [silk.core.input.file :as sf]
+  (:require [hickory.core :as h]
             [silk.core.transform.component :as sc]
             [silk.core.transform.element :as sel]
             [silk.core.transform.preprocess :as pre]
             [silk.core.transform.postprocess :as post]
-            [silk.core.transform.view :as sv]
-            [silk.core.transform.path :as sp]))
+            [silk.core.transform.view :as sv]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -33,12 +30,15 @@
 
 (defn- pre-process
   [payload]
-  (->> payload))
+  (->> payload
+       (map #(assoc % :content (sc/process-components true (:content %))))
+       (map #(assoc % :content (h/hickory-to-html (:content %))))))
 
 (defn- process
   [payload live?]
-  (->> payload))
-
+  (->> payload
+       (map #(assoc % :content (sc/process-components false (:content %))))
+       (map #(assoc % :content (h/hickory-to-html (:content %))))))
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
@@ -57,7 +57,7 @@
    and relativisation of uri's.
    mode enables different behaviours across different intended environments."
   [live?]
-  (process (sv/template-wrap->)  live?))
+  (process (sv/template-wrap->) live?))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk

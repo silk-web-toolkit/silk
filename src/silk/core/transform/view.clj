@@ -33,7 +33,10 @@
 (defn- parse-file
   "Converts a HMTL file into hickory"
   [f]
-  (h/as-hickory (h/parse (slurp f))))
+  (try
+    (h/as-hickory (h/parse (slurp f)))
+    (catch Exception e
+      (throw (Exception. (str (.getMessage e) " in file " (.getName f)) e)))))
 
 (defn- add-meta-data
   [meta-node meta-map]
@@ -48,7 +51,7 @@
   "Wraps the view with the template specifed in the HMTL meta header"
   [v]
   (let [parsed-view (parse-file v)
-        vtitle (-> (hs/select (hs/tag :title) parsed-view) first :content first)
+        vtitle (-> (hs/select (hs/tag :title) parsed-view) first :content)
         vbody-attrs (-> (hs/select (hs/tag :body) parsed-view) first :attrs)
         meta (meta-map parsed-view)
         parsed-template (parse-file (template-path meta))
@@ -63,8 +66,8 @@
                    (spec/transform (spec/walker #(= (:tag %) :meta))
                                    #(add-meta-data % meta))
                    (spec/transform (spec/walker #(:data-sw-view (:attrs %)))
-                                   #(assoc % :content (:content parsed-view)))
-                   h/hickory-to-html)}))
+                                   #(assoc % :content (hs/select (hs/child (hs/tag :body) hs/any) parsed-view)))
+              )}))
 
 
 ;; =============================================================================
@@ -76,6 +79,7 @@
   []
   (map #(view-inject %) (sf/get-views)))
 
+; TODO fix
 (defn template-wrap-detail->
   [{path :path template :template}]
   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
@@ -83,7 +87,7 @@
       (let [rel-p (sp/relativise-> (se/project-data-path) (.getPath p))
             data-inj
             (l/document
-             (l/parse (:content w))
+             (l/parse (h/hickory-to-html (:content w)))
              (l/attr? :data-sw-component)
              (l/attr :data-sw-source rel-p))]
         (assoc w :path rel-p :content data-inj)))))
