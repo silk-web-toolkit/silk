@@ -4,7 +4,7 @@
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [com.taoensso/timbre "3.3.1"]
                  [pathetic "0.5.1"]
-                 [me.raynes/laser "1.1.1"]
+                ;  [me.raynes/laser "1.1.1"]
                  [hickory "0.6.0"]
                  [hiccup "1.0.5"]
                  [com.rpl/specter "0.13.0"]

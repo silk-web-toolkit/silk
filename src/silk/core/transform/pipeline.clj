@@ -1,11 +1,11 @@
 (ns silk.core.transform.pipeline
   "Pipeline abstractions.
    Principally view driven."
-  (:require [hickory.core :as h]
+  (:require [hickory.render :as hr]
             [silk.core.transform.component :as sc]
-            [silk.core.transform.element :as sel]
-            [silk.core.transform.preprocess :as pre]
-            [silk.core.transform.postprocess :as post]
+            ; [silk.core.transform.element :as sel]
+            ; [silk.core.transform.preprocess :as pre]
+            ; [silk.core.transform.postprocess :as post]
             [silk.core.transform.view :as sv]))
 
 ;; =============================================================================
@@ -32,13 +32,13 @@
   [payload]
   (->> payload
        (map #(assoc % :content (sc/process-components true (:content %))))
-       (map #(assoc % :content (h/hickory-to-html (:content %))))))
+       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
 
 (defn- process
   [payload live?]
   (->> payload
        (map #(assoc % :content (sc/process-components false (:content %))))
-       (map #(assoc % :content (h/hickory-to-html (:content %))))))
+       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
 
 ;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
@@ -49,7 +49,8 @@
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
   []
-  (pre/preprocess-> (pre-process (sv/template-wrap->))))
+  ; (pre/preprocess-> (pre-process (sv/template-wrap->))))
+  nil)
 
 (defn view-driven-pipeline->
   "Transform data in a pipeline suitable for the majority of standard
@@ -63,9 +64,11 @@
   "Transform data in a pipeline suitable for creating detail pages for silk
    content based directory contents."
   [p tpl mode]
-  (process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
+  (process nil mode))
+  ; (process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
 
 (defn text-pipeline->
   ""
   [items]
-  (post/get-text-> items))
+  ; (post/get-text-> items))
+  nil)

@@ -5,13 +5,13 @@
             [com.rpl.specter :as spec]
             [clojure.java.io :refer [file]]
             [clojure.walk :as walk]
-            [me.raynes.laser :as l]
-            [silk.core.input.ast :as ds]
+            ; [me.raynes.laser :as l]
+            ; [silk.core.input.ast :as ds]
             [silk.core.input.env :as se]
-            [silk.core.input.data :as dt]
+            ; [silk.core.input.data :as dt]
             [silk.core.input.file :as sf]
-            [silk.core.transform.ast :as tx]
-            [silk.core.transform.coerce :as sc]
+            ; [silk.core.transform.ast :as tx]
+            ; [silk.core.transform.coerce :as sc]
             [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 

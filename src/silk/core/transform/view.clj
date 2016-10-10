@@ -4,11 +4,8 @@
   (:require [hickory.core :as h]
             [hickory.select :as hs]
             [com.rpl.specter :as spec]
-            [me.raynes.laser :as l]
             [silk.core.input.env :as se]
-            [silk.core.input.ast :as ds]
             [silk.core.input.file :as sf]
-            [silk.core.transform.ast :as tx]
             [silk.core.transform.path :as sp])
   (:use [clojure.string :only [lower-case split]]))
 
@@ -80,14 +77,14 @@
   (map #(view-inject %) (sf/get-views)))
 
 ; TODO fix
-(defn template-wrap-detail->
-  [{path :path template :template}]
-  (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
-    (for [p path w wrapped]
-      (let [rel-p (sp/relativise-> (se/project-data-path) (.getPath p))
-            data-inj
-            (l/document
-             (l/parse (h/hickory-to-html (:content w)))
-             (l/attr? :data-sw-component)
-             (l/attr :data-sw-source rel-p))]
-        (assoc w :path rel-p :content data-inj)))))
+; (defn template-wrap-detail->
+;   [{path :path template :template}]
+;   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
+;     (for [p path w wrapped]
+;       (let [rel-p (sp/relativise-> (se/project-data-path) (.getPath p))
+;             data-inj
+;             (l/document
+;              (l/parse (h/hickory-to-html (:content w)))
+;              (l/attr? :data-sw-component)
+;              (l/attr :data-sw-source rel-p))]
+;         (assoc w :path rel-p :content data-inj)))))
