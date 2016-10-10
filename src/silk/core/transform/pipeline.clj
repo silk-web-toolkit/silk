@@ -9,66 +9,51 @@
             [silk.core.transform.view :as sv]))
 
 ;; =============================================================================
-;; Helper functions
-;; =============================================================================
-
-; (defn- pre-process
-;   [payload]
-;   (->> payload
-;        (map #(sc/process-components true %))))
-;
-; (defn- process
-;   [payload live?]
-;   (->> payload
-;        (map #(sc/process-components false %))
-;        (map #(sel/relativise-attrs :link :href % live?))
-;        (map #(sel/relativise-attrs :img :src % live?))
-;        (map #(sel/relativise-attrs :script :src % live?))
-;        (map #(sel/relativise-attrs :a :href % live?))
-;        (map #(sel/relativise-attrs :form :action % live?))))
-
-
-(defn- pre-process
-  [payload]
-  (->> payload
-       (map #(assoc % :content (sc/process-components true (:content %))))
-       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
-
-(defn- process
-  [payload live?]
-  (->> payload
-       (map #(assoc % :content (sc/process-components false (:content %))))
-       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
-
-;; =============================================================================
 ;; Pipeline abstraction functions, see namespace comment
 ;; =============================================================================
 
-(defn preprocessor->
-  "Transform data in a pipeline into a data source edn files.
-   Persists special edn files for component creation; menu, physical sitemap.
-   Reads semantic markup from views."
+(defn view-pipline->
+  "Combines views, templates and components "
   []
-  ; (pre/preprocess-> (pre-process (sv/template-wrap->))))
-  nil)
-
-(defn view-driven-pipeline->
-  "Transform data in a pipeline suitable for the majority of standard
-   view presentation cases, including template wrapping, component injection
-   and relativisation of uri's.
-   mode enables different behaviours across different intended environments."
-  [live?]
-  (process (sv/template-wrap->) live?))
+  (->> (sv/template-wrap->)
+       (map #(assoc % :content (sc/process-components (:content %))))))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk
    content based directory contents."
-  [p tpl mode]
-  (process nil mode))
-  ; (process (sv/template-wrap-detail-> {:path p :template tpl}) mode))
+  [path tpl]
+  (->> (sv/template-wrap-detail-> {:path path :template tpl})
+       (map #(assoc % :content (sc/process-components (:content %))))))
+
+(defn gen-nav-data-pipeline->
+  "Transform data in a pipeline into a data source edn files.
+   Persists special edn files for component creation; menu, physical sitemap.
+   Reads semantic markup from views."
+  [payload]
+  payload)
+  ; (pre/preprocess-> payload))
+
+(defn inject-data-pipeline->
+  "Reads data source and injects data into markup"
+  [payload]
+  payload)
+
+(defn html-pipeline->
+  "Relativisation of uri's allows different behaviours across different
+   intended environments & converts Hickory into HTML"
+  [payload live?]
+  (->> payload
+      (map #(assoc % :content (hr/hickory-to-html (:content %)))))
+      ;  (map #(sc/process-components false %))
+      ;  (map #(sel/relativise-attrs :link :href % live?))
+      ;  (map #(sel/relativise-attrs :img :src % live?))
+      ;  (map #(sel/relativise-attrs :script :src % live?))
+      ;  (map #(sel/relativise-attrs :a :href % live?))
+      ;  (map #(sel/relativise-attrs :form :action % live?))
+      )
 
 (defn text-pipeline->
-  ""
-  [items]
-  ; (post/get-text-> items))
+  "Gets the text content from each view"
+  [payload]
   nil)
+  ; (post/get-text-> payload))

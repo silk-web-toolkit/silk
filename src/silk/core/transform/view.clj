@@ -77,8 +77,9 @@
   (map #(view-inject %) (sf/get-views)))
 
 ; TODO fix
-; (defn template-wrap-detail->
-;   [{path :path template :template}]
+(defn template-wrap-detail->
+  [{path :path template :template}]
+  nil)
 ;   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
 ;     (for [p path w wrapped]
 ;       (let [rel-p (sp/relativise-> (se/project-data-path) (.getPath p))

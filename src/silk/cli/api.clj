@@ -19,8 +19,10 @@
   (io/check-silk-configuration)
   (io/check-silk-project-structure)
   (io/side-effecting-spin-io)
-  (pipes/preprocessor->)
-  (let [view (pipes/view-driven-pipeline-> live?)
+  (let [view (-> (pipes/view-pipline->)
+                 (pipes/gen-nav-data-pipeline->)
+                 (pipes/inject-data-pipeline->)
+                 (pipes/html-pipeline-> live?))
         data (io/get-data-driven-pipeline live?)
         text (pipes/text-pipeline-> (concat view data))]
     (io/create-view-driven-pages view)

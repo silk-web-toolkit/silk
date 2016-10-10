@@ -98,9 +98,11 @@
         (if (is-detail? path #".edn")
           (let [f (file path)
                 tpl (file (str (se/project-details-path) (.getName f) ".html"))]
-            (if (.exists (file tpl))
-              (pipes/data-detail-pipeline-> (.listFiles f) tpl live?)
-              nil))
+            (when (.exists (file tpl))
+              (-> (pipes/data-detail-pipeline-> (.listFiles f) tpl)
+                  (pipes/gen-nav-data-pipeline->)
+                  (pipes/inject-data-pipeline->)
+                  (pipes/html-pipeline-> live?))))
           (do-index-pages path))))))
 
 (defn create-data-driven-pages [ddp]

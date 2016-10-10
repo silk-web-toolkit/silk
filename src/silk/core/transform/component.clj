@@ -182,6 +182,6 @@
 
 (defn process-components
   "Adds components"
-  [raw? hick]
+  [hick]
   (let [n (spec/transform (spec/walker #(:data-sw-component (:attrs %))) #(load-comp %) hick)]
-    (if (= hick n) n (process-components raw? n))))
+    (if (= hick n) n (process-components n))))
