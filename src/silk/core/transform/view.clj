@@ -1,8 +1,7 @@
 (ns silk.core.transform.view
   "View related transformations.
    Principally view driven."
-  (:require [hickory.core :as h]
-            [hickory.select :as hs]
+  (:require [hickory.select :as hs]
             [com.rpl.specter :as spec]
             [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
@@ -27,14 +26,6 @@
                                      (lower-case (str (:content (:attrs %)))))
                           (hs/select (hs/tag :meta) html-hickory))))
 
-(defn- parse-file
-  "Converts a HMTL file into hickory"
-  [f]
-  (try
-    (h/as-hickory (h/parse (slurp f)))
-    (catch Exception e
-      (throw (Exception. (str (.getMessage e) " in file " (.getName f)) e)))))
-
 (defn- add-meta-data
   [meta-node meta-map]
   (if-let [m (find meta-map (keyword (get-in meta-node [:attrs :name])))]
@@ -47,11 +38,11 @@
 (defn- view-inject
   "Wraps the view with the template specifed in the HMTL meta header"
   [v]
-  (let [parsed-view (parse-file v)
+  (let [parsed-view (sf/hick-file v)
         vtitle (-> (hs/select (hs/tag :title) parsed-view) first :content)
         vbody-attrs (-> (hs/select (hs/tag :body) parsed-view) first :attrs)
         meta (meta-map parsed-view)
-        parsed-template (parse-file (template-path meta))
+        parsed-template (sf/hick-file (template-path meta))
         name (.getName v)]
     {:name name
      :path (sp/relativise-> (se/views-path) (.getPath v))
@@ -62,7 +53,7 @@
                                    #(assoc % :content vtitle))
                    (spec/transform (spec/walker #(= (:tag %) :meta))
                                    #(add-meta-data % meta))
-                   (spec/transform (spec/walker #(:data-sw-view (:attrs %)))
+                   (spec/transform (spec/walker #(get-in % [:attrs :data-sw-view]))
                                    #(assoc % :content (hs/select (hs/child (hs/tag :body) hs/any) parsed-view)))
               )}))
 

@@ -1,6 +1,7 @@
 (ns silk.core.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
+            [hickory.core :as h]
             [me.rossputin.diskops :as do]
             [silk.core.input.env :as se])
   (import java.io.File))
@@ -75,7 +76,7 @@
 (defn component [path]
   (quantum-resource (str path ".html") "components" se/components-path))
 
-(defn data [path] (quantum-resource path "data" se/data-path))
+(defn data [path] (quantum-resource (str path ".edn") "data" se/data-path))
 
 (defn get-views []
   (-> (get-views-raw)
@@ -104,3 +105,11 @@
        (filter #(.isFile %))
        (map #(.getParent %))
        distinct))
+
+(defn hick-file
+ "Converts a HMTL file into hickory"
+ [f]
+ (try
+   (h/as-hickory (h/parse (slurp f)))
+   (catch Exception e
+     (throw (Exception. (str (.getMessage e) " in file " (.getName f)) e)))))

@@ -3,8 +3,9 @@
    Principally view driven."
   (:require [hickory.render :as hr]
             [silk.core.transform.component :as sc]
+            [silk.core.transform.data :as sd]
             ; [silk.core.transform.element :as sel]
-            ; [silk.core.transform.preprocess :as pre]
+            [silk.core.transform.preprocess :as pre]
             ; [silk.core.transform.postprocess :as post]
             [silk.core.transform.view :as sv]))
 
@@ -30,13 +31,14 @@
    Persists special edn files for component creation; menu, physical sitemap.
    Reads semantic markup from views."
   [payload]
+  (pre/preprocess-> payload)
   payload)
-  ; (pre/preprocess-> payload))
 
 (defn inject-data-pipeline->
   "Reads data source and injects data into markup"
   [payload]
-  payload)
+  (->> payload
+      (map #(assoc % :content (sd/process-data (:content %))))))
 
 (defn html-pipeline->
   "Relativisation of uri's allows different behaviours across different

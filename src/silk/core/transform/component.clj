@@ -1,7 +1,6 @@
 (ns silk.core.transform.component
   "Component related transformations.  "
-  (:require [hickory.core :as h]
-            [hickory.select :as hs]
+  (:require [hickory.select :as hs]
             [com.rpl.specter :as spec]
             [clojure.java.io :refer [file]]
             [clojure.walk :as walk]
@@ -11,7 +10,6 @@
             ; [silk.core.input.data :as dt]
             [silk.core.input.file :as sf]
             ; [silk.core.transform.ast :as tx]
-            ; [silk.core.transform.coerce :as sc]
             [silk.core.transform.path :as sp])
   (:use [clojure.string :only [split]]))
 
@@ -155,19 +153,11 @@
 ;       t
 ;       (process-components raw? c))))
 
-(defn- parse-file
-  "Converts a HMTL file into hickory"
-  [f]
-  (try
-    (h/as-hickory (h/parse (slurp f)))
-    (catch Exception e
-      (throw (Exception. (str (.getMessage e) " in file " (.getName f)) e)))))
-
 (defn- load-comp
   [comp-hickory]
   (let [path (:data-sw-component (:attrs comp-hickory))
         f (sf/component path)
-        c (hs/select (hs/child (hs/tag :body) hs/any) (parse-file f))
+        c (hs/select (hs/child (hs/tag :body) hs/any) (sf/hick-file f))
         old (spec/select (spec/walker #(:data-sw-component %)) c)]
     ; Make sure the component does not call itself
     (if (some #(= (:data-sw-component %) path) old)
@@ -183,5 +173,5 @@
 (defn process-components
   "Adds components"
   [hick]
-  (let [n (spec/transform (spec/walker #(:data-sw-component (:attrs %))) #(load-comp %) hick)]
+  (let [n (spec/transform (spec/walker #(get-in % [:attrs :data-sw-component])) #(load-comp %) hick)]
     (if (= hick n) n (process-components n))))
