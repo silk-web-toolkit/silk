@@ -88,10 +88,12 @@
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
+(defn- get-data [d v] (str (get d (keyword (last (split v #"\."))))))
+
 (defn- inject-text
   [hick d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (assoc hick :content [(str (get d (keyword v)))])
+    (assoc hick :content [(get-data d v)])
     hick))
 
 (defn- inject-attr
@@ -99,26 +101,156 @@
   (assoc hick :attrs (into (sorted-map)
     (for [[k v] (:attrs hick)]
       (if-let [k2 (keyword (last (silk-attr? k)))]
-        {k2 (str (get d (keyword v)))}
+        {k2 (get-data d v)}
         {k v})))))
 
-(defn- inject-single
+(defn- data-level
+  "Data level based on deepest data-sw-* value .e.g items.childs"
   [hick data]
-  (spec/transform (spec/walker #(some (fn [k] (silk-attr? (first k))) (:attrs %)))
-    (fn [h]
-      (-> h
-          (inject-text data)
-          (update-in [:attrs] dissoc :data-sw-text)
-          (inject-attr data)))
-    hick))
+  (let [selects (spec/select (spec/walker
+                  #(and (not (repeating-tag? (:tag %)))
+                        (some (fn [k] (silk-attr? (first k))) (:attrs %))))
+                  hick)
+        at-vals (flatten (map #(vals (:attrs %)) selects))
+        deepest (last (sort-by #(count (re-seq #"\." %)) at-vals))]
+    (seq (map #(keyword %) (drop-last (split deepest #"\."))))))
+
+; (defn- inject-single
+;   [hick data]
+;   (spec/transform (spec/walker #(and (not (repeating-tag? (:tag %)))
+;                                      (some (fn [k] (silk-attr? (first k))) (:attrs %))))
+;     (fn [h]
+;       (-> h
+;           (inject-text data)
+;           (update-in [:attrs] dissoc :data-sw-text)
+;           (inject-attr data)))
+;     hick))
+
+
+; (defn- walk-content
+;   [hick]
+;   (if (vector? hick)
+;     (doall (for [h hick] (walk-content h)))
+;     (do
+;       ; (prn hick)
+;       ; (println "--------------------------")
+;       (if-let [h (recur ]
+;         (recur h)
+;         hick))))
+
+
+; (defn- walk-content
+;   [hick]
+;   (cond
+;     (vector?  hick) (do (doseq [h hick] (walk-content h)) hick)
+;     (:content hick) (walk-content (:content hick))
+;     :else     hick))
+
+
+; (defn- walk-content
+;   [hick]
+;   (cond
+;     (vector? hick)  (doall (for [h hick] (walk-content h)))
+;     (:content hick) (do
+;                       (prn (dissoc hick :content))
+;                       (recur (:content hick)))
+;     :else           (prn hick)))
+
+
+; (def update-last-vec
+;   [hick path tag]
+;   (assoc-in hick [:content 0 :content 1 :content 3] {:tag :looooooooooooooool})
+;   (map)
+;   (update-in l p conj (assoc tag :content []))
+
+
+(defn- keys-with-last-index
+  [hick keys]
+  (loop [k keys h hick indexes []]
+    (if-let [fk (first k)]
+      (recur (next k) (last (fk h)) (into indexes [fk (dec (count (fk h)))]))
+      (vec (drop-last indexes)))))
+
+(defn- walk-content
+  [hick]
+  (loop [h hick hl nil n nil nl nil r-hick nil]
+    (if (or (vector? h) (seq? h))
+      (if-let [c (:content (first h))]
+        (do
+          (prn (keys-with-last-index r-hick hl) "---1---" (assoc (first h) :content []))
+          (recur
+            c
+            (conj hl :content)
+            (concat (next h) n)
+            (concat (for [i (next h)] hl) nl)
+            (update-in r-hick (keys-with-last-index r-hick hl) conj (assoc (first h) :content []))))
+        (do
+          (prn (keys-with-last-index r-hick hl) "---2---" (first h))
+          (recur
+            (next h)
+            hl
+            n
+            nl
+            (update-in r-hick (keys-with-last-index r-hick hl) conj (first h)))))
+      (if-let [c (:content h)]
+        (do
+          (prn hl "---3---" (assoc h :content []))
+          (recur
+            c
+            [:content]
+            n
+            nl
+            (assoc h :content [])))
+        (if n
+          (do
+            (prn (keys-with-last-index r-hick (first nl)) "---4---" (first n))
+            (recur
+              nil
+              nil
+              (next n)
+              (next nl)
+              (update-in r-hick (keys-with-last-index r-hick (first nl)) conj (first n))))
+          r-hick)))))
+
+; (defn- walk-content
+;   [hick]
+;   (loop [h hick l hick n hick p []]
+;     (if (or (vector? h) (seq? h))
+;       (if-let [c (:content (first h))]
+;         (do (prn "---1---" l p) (recur c        (update-in l p conj (assoc (first h) :content [])) n (conj p 0 :content)))
+;         (do (prn "---2---" l p) (recur (next h) (update-in l p conj (first h))                     n (update p (- (count p) 2) inc))))
+;       (if-let [c (:content h)]
+;         (do (prn "---3---" l  ) (recur c        (assoc l :content []) n [:content]))
+;         (do (prn "returns" l  ) n)))))
+
 
 (defn- inject-list
   [hick data]
-  (spec/transform (spec/walker #(repeating-tag? (:tag %)))
-    (fn [h]
-      (assoc h :content
-        (flatten (map #(:content %) (for [d data] (inject-single h d))))))
-    hick))
+  ; (println "------- expected ----------")
+  ; (prn hick)
+  (println "-----------------")
+  (prn (walk-content hick))
+  (walk-content hick))
+
+
+  ; (spec/transform (spec/walker #(:content %))
+  ;   (fn [h]
+  ;     (prn h)
+  ;     h
+  ;   )
+  ;   ;   (assoc h :content (flatten (map #(:content %)
+  ;   ;     (for [d data]
+  ;   ;       (spec/transform (spec/walker #(:content %))
+  ;   ;         (fn [h2]
+  ;   ;           (prn (= h2 h))
+  ;   ;           (println "--------------" (get-in h2 [:attrs :data-sw-text]))
+  ;   ;           ; (when-let [dl (data-level h d)] (inject-list h (get-in d dl)))
+  ;   ;           (-> h2
+  ;   ;               (inject-text d)
+  ;   ;               (update-in [:attrs] dissoc :data-sw-text)
+  ;   ;               (inject-attr d)))
+  ;   ;         h))))))
+  ;   hick))
 
 (defn- source
   [hick]
@@ -131,8 +263,8 @@
         data   (take limit sorted)]
    (-> hick
        (update-in [:attrs] dissoc :data-sw-source :data-sw-limit :data-sw-sort :data-sw-sort-dir)
-       (inject-list data)
-       (inject-single (first data)))))
+       (inject-list data))))
+      ;  (inject-single (first data)))))
 
 ;; =============================================================================
 ;; Data transformations
