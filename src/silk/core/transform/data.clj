@@ -28,16 +28,19 @@
 (defn- inject-text
   [hick d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (update-in (assoc hick :content [(get-data d v)]) [:attrs] dissoc :data-sw-text)
+    (-> hick
+        (assoc :content [(get-data d v)])
+        (update-in [:attrs] dissoc :data-sw-text))
     hick))
 
 (defn- inject-attr
   [hick d]
-  (assoc hick :attrs (into (sorted-map)
-    (for [[k v] (:attrs hick)]
-      (if-let [k2 (keyword (last (silk-attr? k)))]
-        {k2 (get-data d v)}
-        {k v})))))
+  (let [attrs (:attrs hick)
+        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %))) (keys attrs)))
+        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
+    (-> hick
+       (update-in [:attrs] merge n-attrs)
+       (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
 
 (defn- keys-with-last-index
   [hick keys]
@@ -84,29 +87,23 @@
     (when-let [deepest (last (sort-by #(count (re-seq #"\." %)) avals))]
       (seq (map #(keyword %) (drop-last (split deepest #"\.")))))))
 
-(defn- inject-single
+(defn- inject
   [hick data data-pos]
-  (def add-data? true)
+  (def skip? false)
   (map-content hick (fn [h]
-    (let [; _ (println "->" data-pos)
-          dl-data (get-in data data-pos)
-          _ (println dl-data)
-          ]
-    (if (and (not (= hick h)) (repeating-tag? (:tag h)))
-        (let [new-pos (if-let [d (data-level h)] (conj data-pos (last d)) data-pos)
-              new-data (get-in data new-pos)]
-          (println new-pos)
-          ; (println new-data)
-          (println ">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-          (assoc h :content (flatten (map-indexed
-            (fn [i d] (if-let [x (empty? (:content (inject-single h data (conj new-pos i))))] x [(str (conj new-pos i))]))
-            new-data))))
-      (if (or (= hick h) (and (not (repeating-tag? (:tag h))) add-data?))
+    (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def skip? true))
+    (if (and skip? (repeating-tag? (:tag h)))
+      (let [p (if-let [d (data-level h)] (conj data-pos (last d)) data-pos)
+            d (get-in data p)
+            c (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)]
+        (if (some keyword? p)
+          (assoc h :content (flatten c))
+          h))
+      (if-let [dl-data (when (or (map? h) skip?) (get-in data data-pos))]
         (-> h
             (inject-text dl-data)
             (inject-attr dl-data))
-        (do (def add-data? false)
-            h)))))))
+        h)))))
 
 (defn- source
   [hick]
@@ -117,10 +114,9 @@
         sorted (if-let [p param] (sort-> edn p direc) edn)
         limit  (if-let [s (:data-sw-limit (:attrs hick))] (sc/parse-int s) (count sorted))
         data   (vec (take limit sorted))]
-   (println "--------------------------------------")
    (spec/transform
      (spec/walker #(repeating-tag? (:tag %)))
-     #(assoc % :content (flatten (map-indexed (fn [i d] (:content (inject-single % data (vector i)))) data)))
+     #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data (vector i)))) data)))
      (update-in hick [:attrs] dissoc :data-sw-source :data-sw-limit :data-sw-sort :data-sw-sort-dir))))
 
 ;; =============================================================================
