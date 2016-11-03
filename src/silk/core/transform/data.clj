@@ -2,7 +2,9 @@
   "Data related transformations.  "
   (:require [com.rpl.specter :as spec]
             [hickory.core :as h]
+            [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
+            [silk.core.transform.path :as sp]
             [silk.core.transform.walk :as sw])
   (:use [clojure.string :only [split]]
         [clojure.set    :only [rename-keys]]))
@@ -15,7 +17,11 @@
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
-(defn- get-data [d v] (str (get d (keyword (last (split v #"\."))))))
+(defn- get-data
+  [d v]
+  (if (= v "sw/path")
+    (sp/update-extension (sp/relativise-> (se/project-data-path) (:sw/path d)) "html")
+    (str (get d (keyword (last (split v #"\.")))))))
 
 (defn- hick-decode [t] (h/as-hickory (h/parse (java.net.URLDecoder/decode t))))
 
