@@ -2,7 +2,8 @@
   "Data related transformations.  "
   (:require [com.rpl.specter :as spec]
             [hickory.core :as h]
-            [silk.core.input.file :as sf])
+            [silk.core.input.file :as sf]
+            [silk.core.transform.walk :as sw])
   (:use [clojure.string :only [split]]
         [clojure.set    :only [rename-keys]]))
 
@@ -37,46 +38,10 @@
        (update-in [:attrs] merge n-attrs)
        (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
 
-(defn- keys-with-last-index
-  [hick keys]
-  (loop [k keys h hick indexes []]
-    (if-let [fk (first k)]
-      (recur (next k) (last (fk h)) (into indexes [fk (dec (count (fk h)))]))
-      (vec (drop-last indexes)))))
-
-(defn- update-hick
-  [hick keys node]
-  (update-in hick (keys-with-last-index hick keys) conj node))
-
-(defn- map-content
-  [hick func]
-  (let [fhick (func hick)]
-    (loop [h (:content fhick) hl [:content] n nil nl nil r-hick (assoc fhick :content [])]
-      (if (or (vector? h) (seq? h))
-        (let [changed-hick (if (map? (first h)) (func (first h)) (first h))]
-          (if-let [c (:content changed-hick)]
-            (recur c
-                   (conj hl :content)
-                   (concat (next h) n)
-                   (concat (for [i (next h)] hl) nl)
-                   (update-hick r-hick hl (assoc changed-hick :content [])))
-           (recur (next h)
-                  hl
-                  n
-                  nl
-                  (update-hick r-hick hl changed-hick))))
-          (if n
-            (recur (flatten (vector (first n)))
-                   (flatten (vector (first nl)))
-                   (next n)
-                   (next nl)
-                   r-hick)
-            r-hick)))))
-
 (defn- data-level
   "Data level based on deepest data-sw-* value .e.g items.childs"
   [hick]
-  (let [list1 (map-content hick #(when (or (= hick %) (not (repeating-tag? (:tag %)))) %))
+  (let [list1 (sw/map-content hick #(when (or (= hick %) (not (repeating-tag? (:tag %)))) %))
         attrs (spec/select (spec/walker #(some (fn [k] (silk-attr? (first k))) (:attrs %))) list1)
         avals (flatten (map #(vals (:attrs %)) attrs))]
     (when-let [deepest (last (sort-by #(count (re-seq #"\." %)) avals))]
@@ -85,7 +50,7 @@
 (defn- inject
   [hick data data-pos]
   (def skip? false)
-  (map-content hick (fn [h]
+  (sw/map-content hick (fn [h]
     (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def skip? true))
     (if (and skip? (repeating-tag? (:tag h)))
       (let [p (if-let [dl (data-level h)] (conj data-pos (last dl)) data-pos)

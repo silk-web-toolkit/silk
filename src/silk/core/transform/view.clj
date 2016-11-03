@@ -38,24 +38,26 @@
 (defn- view-inject
   "Wraps the view with the template specifed in the HMTL meta header"
   [v]
-  (let [parsed-view (sf/hick-file v)
-        vtitle (-> (hs/select (hs/tag :title) parsed-view) first :content)
-        vbody-attrs (-> (hs/select (hs/tag :body) parsed-view) first :attrs)
-        meta (meta-map parsed-view)
-        parsed-template (sf/hick-file (template-path meta))
+  (let [hick (sf/hick-file v)
+        vtitle (-> (hs/select (hs/tag :title) hick) first :content)
+        vbody-attrs (-> (hs/select (hs/tag :body) hick) first :attrs)
+        meta (meta-map hick)
         name (.getName v)]
     {:name name
      :path (sp/relativise-> (se/views-path) (.getPath v))
      :nav (:data-sw-nav vbody-attrs)
      :priority (:data-sw-priority vbody-attrs)
-     :content (->> parsed-template
-                   (spec/transform (spec/walker #(= (:tag %) :title))
-                                   #(assoc % :content vtitle))
-                   (spec/transform (spec/walker #(= (:tag %) :meta))
-                                   #(add-meta-data % meta))
-                   (spec/transform (spec/walker #(get-in % [:attrs :data-sw-view]))
-                                   #(assoc % :content (hs/select (hs/child (hs/tag :body) hs/any) parsed-view)))
-              )}))
+     :content
+      (->> (sf/hick-file (template-path meta))
+           (spec/transform
+             (spec/walker #(= (:tag %) :title))
+             #(assoc % :content vtitle))
+           (spec/transform
+             (spec/walker #(= (:tag %) :meta))
+             #(add-meta-data % meta))
+           (spec/transform
+             (spec/walker #(get-in % [:attrs :data-sw-view]))
+             #(assoc % :content (hs/select (hs/child (hs/tag :body) hs/any) hick))))}))
 
 
 ;; =============================================================================
@@ -67,16 +69,13 @@
   []
   (map #(view-inject %) (sf/get-views)))
 
-; TODO fix
 (defn template-wrap-detail->
   [{path :path template :template}]
-  nil)
-;   (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
-;     (for [p path w wrapped]
-;       (let [rel-p (sp/relativise-> (se/project-data-path) (.getPath p))
-;             data-inj
-;             (l/document
-;              (l/parse (h/hickory-to-html (:content w)))
-;              (l/attr? :data-sw-component)
-;              (l/attr :data-sw-source rel-p))]
-;         (assoc w :path rel-p :content data-inj)))))
+  (let [wrapped (map #(view-inject %) (take (count path) (repeat template)))]
+    (for [p path w wrapped]
+      (let [r (sp/relativise-> (se/project-data-path) (.getPath p))]
+        (assoc w :path r :content
+          (spec/transform
+            (spec/walker #(get-in % [:attrs :data-sw-source]))
+            #(update % :attrs conj [:data-sw-source r])
+            (:content w)))))))

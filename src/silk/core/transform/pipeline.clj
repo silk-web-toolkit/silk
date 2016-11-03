@@ -4,7 +4,7 @@
   (:require [hickory.render :as hr]
             [silk.core.transform.component :as sc]
             [silk.core.transform.data :as sd]
-            ; [silk.core.transform.element :as sel]
+            [silk.core.transform.element :as sel]
             [silk.core.transform.preprocess :as pre]
             ; [silk.core.transform.postprocess :as post]
             [silk.core.transform.view :as sv]))
@@ -45,14 +45,12 @@
    intended environments & converts Hickory into HTML"
   [payload live?]
   (->> payload
-      (map #(assoc % :content (hr/hickory-to-html (:content %)))))
-      ;  (map #(sc/process-components false %))
-      ;  (map #(sel/relativise-attrs :link :href % live?))
-      ;  (map #(sel/relativise-attrs :img :src % live?))
-      ;  (map #(sel/relativise-attrs :script :src % live?))
-      ;  (map #(sel/relativise-attrs :a :href % live?))
-      ;  (map #(sel/relativise-attrs :form :action % live?))
-      )
+       (map #(sel/relativise-attrs :link :href % live?))
+       (map #(sel/relativise-attrs :img :src % live?))
+       (map #(sel/relativise-attrs :script :src % live?))
+       (map #(sel/relativise-attrs :a :href % live?))
+       (map #(sel/relativise-attrs :form :action % live?))
+       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
 
 (defn text-pipeline->
   "Gets the text content from each view"
