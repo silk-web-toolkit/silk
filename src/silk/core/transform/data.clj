@@ -1,9 +1,8 @@
 (ns silk.core.transform.data
   "Data related transformations.  "
   (:require [com.rpl.specter :as spec]
-            [clojure.edn :as edn]
-            [silk.core.input.file :as sf]
-            [silk.core.transform.coerce :as sc])
+            [hickory.core :as h]
+            [silk.core.input.file :as sf])
   (:use [clojure.string :only [split]]
         [clojure.set    :only [rename-keys]]))
 
@@ -11,26 +10,22 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- sort->
-  "Default to descending sort."
-  [data sort dir]
-  (let [ascending (sort-by (keyword sort) data)]
-    (if-let [d dir]
-      (if (= d "ascending") ascending (reverse ascending))
-      ascending)))
-
 (defn- repeating-tag? [t] (.contains [:ul :ol :tbody] t))
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
 (defn- get-data [d v] (str (get d (keyword (last (split v #"\."))))))
 
+(defn- hick-decode [t] (h/as-hickory (h/parse (java.net.URLDecoder/decode t))))
+
 (defn- inject-text
   [hick d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (-> hick
-        (assoc :content [(get-data d v)])
-        (update-in [:attrs] dissoc :data-sw-text))
+    (let [t (get-data d v)
+          c (if (.endsWith v "-html") (hick-decode t) t)]
+      (-> hick
+          (assoc :content [c])
+          (update-in [:attrs] dissoc :data-sw-text)))
     hick))
 
 (defn- inject-attr
@@ -93,11 +88,10 @@
   (map-content hick (fn [h]
     (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def skip? true))
     (if (and skip? (repeating-tag? (:tag h)))
-      (let [p (if-let [d (data-level h)] (conj data-pos (last d)) data-pos)
-            d (get-in data p)
-            c (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)]
-        (if (some keyword? p)
-          (assoc h :content (flatten c))
+      (let [p (if-let [dl (data-level h)] (conj data-pos (last dl)) data-pos)
+            d (get-in data p)]
+        (if (and d (some keyword? p))
+          (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)))
           h))
       (if-let [dl-data (when (or (map? h) skip?) (get-in data data-pos))]
         (-> h
@@ -107,17 +101,18 @@
 
 (defn- source
   [hick]
-  (let [src    (:data-sw-source (:attrs hick))
-        param  (:data-sw-sort (:attrs hick))
-        direc  (:data-sw-sort-dir (:attrs hick))
-        edn    (edn/read-string (slurp (sf/data src)))
-        sorted (if-let [p param] (sort-> edn p direc) edn)
-        limit  (if-let [s (:data-sw-limit (:attrs hick))] (sc/parse-int s) (count sorted))
-        data   (vec (take limit sorted))]
-   (spec/transform
-     (spec/walker #(repeating-tag? (:tag %)))
-     #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data (vector i)))) data)))
-     (update-in hick [:attrs] dissoc :data-sw-source :data-sw-limit :data-sw-sort :data-sw-sort-dir))))
+  (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-source])
+                            (get-in hick [:attrs :data-sw-sort])
+                            (get-in hick [:attrs :data-sw-dir])
+                            (get-in hick [:attrs :data-sw-limit]))
+        h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
+   (if (map? data)
+     (inject h [data] [0])
+     (spec/transform
+       (spec/walker #(repeating-tag? (:tag %)))
+       #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data (vector i)))) data)))
+       h))))
+
 
 ;; =============================================================================
 ;; Data transformations

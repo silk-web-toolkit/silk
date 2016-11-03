@@ -52,6 +52,6 @@
 
 (defonce sw-path (str silk-home (do/fs) "sw"))
 
-; (defonce sw-views-path (str sw-path (do/fs) "views"))
+(defonce sw-views-path (str sw-path (do/fs) "views"))
 
 (defonce sw-bookmarks-path (str sw-path (do/fs) "bookmarks"))

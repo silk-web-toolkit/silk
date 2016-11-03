@@ -9,14 +9,14 @@
 ;; Helper functions
 ;; =============================================================================
 
-; (defn- view-data
-;   "Create .edn data files for each view, one level deep."
-;   [name path nav priority content]
-;   (if nav
-;     (let [data (assoc {} :title nav :path path :priority priority)
-;           fname (str se/sw-views-path (do/fs) "views.edn")]
-;       (.mkdirs (File. se/sw-views-path))
-;       (spit fname (pr-str data)))))
+(defn- view-data
+  "Create .edn data files for each view, one level deep."
+  [name path nav priority content]
+  (when nav
+    (let [data (assoc {} :title nav :path path :priority priority)
+          fname (str se/sw-views-path (do/fs) (sp/update-extension name "edn"))]
+      (.mkdirs (File. se/sw-views-path))
+      (spit fname (pr-str data)))))
 
 (defn- bookmark-data
   "Create .edn data files foreach fragment id, page jumps, inside a view, one
@@ -54,10 +54,6 @@
 (defn preprocess->
   "Generates navigation data for menu components."
   [payload]
-  (when-let [views (seq (for [{:keys [name path nav priority]} payload]
-                      {:title nav :path path :priority priority}))]
-    (do (.mkdirs (File. se/sw-path))
-        (spit (str se/sw-path (do/fs) "views.edn") (pr-str views))))
-
-  (for [{:keys [name path nav priority content]} payload]
+  (doseq [{:keys [name path nav priority content]} payload]
+    (view-data name path nav priority content)
     (bookmark-data name path nav priority content)))

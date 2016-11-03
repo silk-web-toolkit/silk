@@ -1,6 +1,7 @@
 (ns silk.core.input.file
   "File input functions including template and component."
   (:require [clojure.java.io :refer [file]]
+            [clojure.edn :as edn]
             [hickory.core :as h]
             [me.rossputin.diskops :as do]
             [silk.core.input.env :as se])
@@ -76,8 +77,6 @@
 (defn component [path]
   (quantum-resource (str path ".html") "components" se/components-path))
 
-(defn data [path] (quantum-resource (str path ".edn") "data" se/data-path))
-
 (defn get-views []
   (-> (get-views-raw)
       (do/filter-exts ["html"])))
@@ -105,6 +104,28 @@
        (filter #(.isFile %))
        (map #(.getParent %))
        distinct))
+
+(defn- sort-it
+  "Default to descending sort"
+  [data sort direc]
+  (cond
+    (nil? sort)           (sort-by :sw/path data)
+    (nil? direc)          (sort-by (keyword sort) data)
+    (= direc "ascending") (sort-by (keyword sort) data)
+    :else                 (reverse (sort-by (keyword sort) data))))
+
+(defn- read-data [f] (merge (file-2-map f) (edn/read-string (slurp f))))
+
+(defn slurp-data
+  [path sort direc limit]
+  (let [qr (quantum-resource path "data" se/data-path)]
+    (if (.isDirectory qr)
+      (let [a (for [f (edn-files (.listFiles qr) true)] (read-data f))
+            b (sort-it a sort direc)]
+        (if limit
+          (vec (take (Integer. (re-find  #"\d+" limit)) b))
+          (vec b)))
+      (read-data qr))))
 
 (defn hick-file
  "Converts a HMTL file into hickory"
