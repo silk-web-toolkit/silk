@@ -76,6 +76,6 @@
       (let [r (sp/relativise-> (se/project-data-path) (.getPath p))]
         (assoc w :path r :content
           (spec/transform
-            (spec/walker #(get-in % [:attrs :data-sw-source]))
-            #(update % :attrs conj [:data-sw-source r])
+            (spec/walker #(= (:tag %) :body))
+            #(update % :attrs merge {:data-sw-source r})
             (:content w)))))))
