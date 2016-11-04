@@ -53,16 +53,17 @@
 
 (defn- inject
   [hick data data-pos]
-  (def skip? false)
+  (def drill? false)
   (sw/map-content hick (fn [h]
-    (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def skip? true))
-    (if (and skip? (repeating-tag? (:tag h)))
+    (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def drill? true))
+    (if (and drill? (repeating-tag? (:tag h)))
       (let [p (if-let [dl (data-level h)] (conj data-pos (last dl)) data-pos)
             d (get-in data p)]
-        (if (and d (some keyword? p))
-          (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)))
-          h))
-      (if-let [dl-data (when (or (map? h) skip?) (get-in data data-pos))]
+        (cond
+          (= (count d) 0)      (assoc h :content [""])
+          (not (= p data-pos)) (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)))
+          :else                h))
+      (if-let [dl-data (when (or (map? h) drill?) (get-in data data-pos))]
         (-> h
             (inject-text dl-data)
             (inject-attr dl-data))
@@ -75,12 +76,13 @@
                             (get-in hick [:attrs :data-sw-dir])
                             (get-in hick [:attrs :data-sw-limit]))
         h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
-   (if (map? data)
-     (inject h [data] [0])
-     (spec/transform
-       (spec/walker #(repeating-tag? (:tag %)))
-       #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data (vector i)))) data)))
-       h))))
+   (cond
+     (map? data)        (inject h [data] [0])
+     (= (count data) 0) (assoc h :content [""])
+     :else              (spec/transform
+                          (spec/walker #(repeating-tag? (:tag %)))
+                          #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data [i]))) data)))
+                          h))))
 
 ;; =============================================================================
 ;; Data transformations
