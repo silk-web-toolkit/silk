@@ -5,7 +5,8 @@
             [com.rpl.specter :as spec]
             [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
-            [silk.core.transform.path :as sp])
+            [silk.core.transform.path :as sp]
+            [silk.core.transform.walk :as sw])
   (:use [clojure.string :only [lower-case split]]))
 
 ;; =============================================================================
@@ -38,27 +39,23 @@
 (defn- view-inject
   "Wraps the view with the template specifed in the HMTL meta header"
   [v]
-  (let [hick (sf/hick-file v)
-        vtitle (-> (hs/select (hs/tag :title) hick) first :content)
-        vbody-attrs (-> (hs/select (hs/tag :body) hick) first :attrs)
-        meta (meta-map hick)
+  (let [vhick (sf/hick-file v)
+        vtitle (-> (hs/select (hs/tag :title) vhick) first :content)
+        bhick (hs/select (hs/child (hs/tag :body) hs/any) vhick)
+        vbody-attrs (-> (hs/select (hs/tag :body) vhick) first :attrs)
+        meta (meta-map vhick)
         name (.getName v)]
     {:name name
      :path (sp/relativise-> (se/views-path) (.getPath v))
      :nav (:data-sw-nav vbody-attrs)
      :priority (:data-sw-priority vbody-attrs)
-     :content
-      (->> (sf/hick-file (template-path meta))
-           (spec/transform
-             (spec/walker #(= (:tag %) :title))
-             #(assoc % :content vtitle))
-           (spec/transform
-             (spec/walker #(= (:tag %) :meta))
-             #(add-meta-data % meta))
-           (spec/transform
-             (spec/walker #(get-in % [:attrs :data-sw-view]))
-             #(assoc % :content (hs/select (hs/child (hs/tag :body) hs/any) hick))))}))
-
+     :content (sw/map-content
+                (sf/hick-file (template-path meta))
+                #(cond
+                  (= (:tag %) :title)               (assoc % :content vtitle)
+                  (= (:tag %) :meta)                (add-meta-data % meta)
+                  (get-in % [:attrs :data-sw-view]) (assoc % :content bhick)
+                  :else                             %))}))
 
 ;; =============================================================================
 ;; Payload transformation functions, see namespace comment
@@ -76,6 +73,6 @@
       (let [r (sp/relativise-> (se/project-data-path) (.getPath p))]
         (assoc w :path r :content
           (spec/transform
-            (spec/walker #(= (:tag %) :body))
+            (spec/walker #(get-in % [:attrs :data-sw-view]))
             #(update % :attrs merge {:data-sw-source r})
             (:content w)))))))
