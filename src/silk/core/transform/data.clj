@@ -23,13 +23,11 @@
     (sp/update-extension (sp/relativise-> (se/project-data-path) (:sw/path d)) "html")
     (str (get d (keyword (last (split v #"\.")))))))
 
-(defn- hick-decode [t] (h/as-hickory (h/parse (java.net.URLDecoder/decode t))))
-
 (defn- inject-text
   [hick d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
     (let [t (get-data d v)
-          c (if (.endsWith v "-html") (hick-decode t) t)]
+          c (if (.endsWith v "-html") (h/as-hickory (h/parse (java.net.URLDecoder/decode t))) t)]
       (-> hick
           (assoc :content [c])
           (update-in [:attrs] dissoc :data-sw-text)))
@@ -38,7 +36,7 @@
 (defn- inject-attr
   [hick d]
   (let [attrs (:attrs hick)
-        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %))) (keys attrs)))
+        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
         n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)
@@ -83,7 +81,6 @@
        (spec/walker #(repeating-tag? (:tag %)))
        #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data (vector i)))) data)))
        h))))
-
 
 ;; =============================================================================
 ;; Data transformations

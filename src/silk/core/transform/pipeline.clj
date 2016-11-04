@@ -6,7 +6,7 @@
             [silk.core.transform.data :as sd]
             [silk.core.transform.element :as sel]
             [silk.core.transform.preprocess :as pre]
-            ; [silk.core.transform.postprocess :as post]
+            [silk.core.transform.postprocess :as post]
             [silk.core.transform.view :as sv]))
 
 ;; =============================================================================
@@ -55,5 +55,4 @@
 (defn text-pipeline->
   "Gets the text content from each view"
   [payload]
-  nil)
-  ; (post/get-text-> payload))
+  (post/get-text-> payload))
