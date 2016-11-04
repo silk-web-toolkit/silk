@@ -57,12 +57,3 @@
       (if-let [v (and (= (:tag h) tag) (get-in h [:attrs attr]))]
         (assoc-in h [:attrs attr] (relativise-attr v (:path payload) live?))
         h)))))
-
-  ;
-  ;
-  ; (let [page (l/parse (:content p))
-  ;       a-tx (l/document
-  ;                page
-  ;                (l/and (l/element= e) (l/attr? a))
-  ;                (l/update-attr a relativise-attr (:path p) live?))]
-  ;   (assoc p :content a-tx)))
