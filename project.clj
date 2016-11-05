@@ -1,4 +1,4 @@
-(defproject org.silkyweb/silk "0.7.0"
+(defproject org.silkyweb/silk "0.8.0"
   :description "Silk static and dynamic publishing toolkit."
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.7.0"]
