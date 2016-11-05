@@ -21,7 +21,7 @@
   [d v]
   (if (= v "sw/path")
     (sp/update-extension (sp/relativise-> (se/project-data-path) (:sw/path d)) "html")
-    (str (get d (keyword (last (split v #"\.")))))))
+    (str (get-in d (map keyword (split v #"\."))))))
 
 (defn- inject-text
   [hick d]
@@ -51,19 +51,42 @@
     (when-let [deepest (last (sort-by #(count (re-seq #"\." %)) avals))]
       (seq (map #(keyword %) (drop-last (split deepest #"\.")))))))
 
-(defn- inject
-  [hick data data-pos]
+(defn remove-item
+  [list item]
+  (let [[n m] (split-with (partial not= item) list)]
+    (vec (concat n (rest m)))))
+
+(defn flatten-in
+  [data keys]
+  (loop [d data ks keys d2 data ks2 [(first keys)]]
+    (cond
+      (number? (first ks))  (recur
+                              (if (= (count ks2) 1)
+                                (nth d2 (first ks2))
+                                (assoc-in d (drop-last ks2) (get d2 (first ks))))
+                              (next ks)
+                              (nth d2 (first ks))
+                              (conj (remove-item ks2 (first ks)) (fnext ks)))
+      (keyword? (first ks)) (recur
+                              (assoc-in d ks2 (get d2 (first ks)))
+                              (next ks)
+                              (get d2 (first ks))
+                              (conj ks2 (fnext ks)))
+      :else                 d)))
+
+(defn- inject-in
+  [hick data ks]
   (def drill? false)
   (sw/map-content hick (fn [h]
     (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def drill? true))
     (if (and drill? (repeating-tag? (:tag h)))
-      (let [p (if-let [dl (data-level h)] (conj data-pos (last dl)) data-pos)
-            d (get-in data p)]
+      (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
+            d (get-in data k)]
         (cond
-          (= (count d) 0)      (assoc h :content [""])
-          (not (= p data-pos)) (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject h data (conj p i)))) d)))
-          :else                h))
-      (if-let [dl-data (when (or (map? h) drill?) (get-in data data-pos))]
+          (= (count d) 0) (assoc h :content [""])
+          (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in h data (conj k i)))) d)))
+          :else            h))
+      (if-let [dl-data (when (or (map? h) drill?) (flatten-in data ks))]
         (-> h
             (inject-text dl-data)
             (inject-attr dl-data))
@@ -77,11 +100,11 @@
                             (get-in hick [:attrs :data-sw-limit]))
         h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
    (cond
-     (map? data)        (inject h [data] [0])
+     (map? data)        (inject-in h [data] [0])
      (= (count data) 0) (assoc h :content [""])
      :else              (spec/transform
                           (spec/walker #(repeating-tag? (:tag %)))
-                          #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject % data [i]))) data)))
+                          #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % data [i]))) data)))
                           h))))
 
 ;; =============================================================================
