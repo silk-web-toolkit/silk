@@ -11,21 +11,16 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn system-root-resource [rel-path system-root]
+(defn- system-root-resource [rel-path system-root]
   (let [sep (if (re-find #"indow" se/os) "\\\\" (do/fs))
         path (str system-root sep (.replaceAll rel-path "/" sep))]
     (file path)))
 
-(defn- file-2-map [f]
+(defn- file-2-map
+  [f]
   {:sw/last-modified (.lastModified f)
    :sw/name (.getName f)
-   :sw/path (.getPath f)
-   :sw/type (if (.isDirectory f) "directory" "file")
-   :sw/is-directory (.isDirectory f)
-   :sw/is-file (.isFile f)
-   :sw/is-hidden (.isHidden f)})
-
-(defstruct node-st :name :path :content :node-type)
+   :sw/path (.getPath f)})
 
 (defn- edn-file?
   [f]
@@ -35,15 +30,25 @@
   [files dirs?]
   (filter #(if dirs? (or (.isDirectory %) (edn-file? %)) (edn-file? %)) files))
 
-(defn file-tree [#^File f]
-  (if (.isDirectory f)
-    (struct node-st (.getName f) (.getPath f)
-      (vec (map file-tree (edn-files (.listFiles f) true))) :directory)
-    (struct node-st (.getName f) (.getPath f) [(.getName f)] :file)))
+(defn- get-data-meta
+  "Get directory metadata under the 'data' directory given a directory d.
+   Useful in cases where we do not intend to do anything with file contents."
+  [res]
+  (map #(file-2-map %) (edn-files (file-seq res) false)))
 
-(defn get-views-raw []
-  (remove #(.isDirectory %) (file-seq (file (se/views-path)))))
+(defn- sort-it
+  "Default to descending sort"
+  [data sort direc]
+  (cond
+    (nil? sort)           (sort-by :sw/path data)
+    (nil? direc)          (sort-by (keyword sort) data)
+    (= direc "ascending") (sort-by (keyword sort) data)
+    :else                 (reverse (sort-by (keyword sort) data))))
 
+(defn- file-tree [#^File f]
+ (if (.isDirectory f)
+   (merge (file-2-map f) {:sw/contents (vec (map file-tree (edn-files (.listFiles f) true)))})
+   (merge (file-2-map f) (edn/read-string (slurp f)))))
 
 ;; =============================================================================
 ;; File based input, see namespace comment
@@ -78,19 +83,8 @@
   (quantum-resource (str path ".html") "components" se/components-path))
 
 (defn get-views []
-  (-> (get-views-raw)
+  (-> (remove #(.isDirectory %) (file-seq (file (se/views-path))))
       (do/filter-exts ["html"])))
-
-(defn get-data-meta
-  "Get directory metadata under the 'data' directory given a directory d.
-   Useful in cases where we do not intend to do anything with file contents."
-  [res]
-  (map #(file-2-map %) (edn-files (file-seq res) false)))
-
-(defn get-data-meta-tree
-  "Same as get-data-meta but work with hierarchy."
-  [res]
-  (if (nil? res) {} (file-tree res)))
 
 (defn get-data-directories
   "Get each of the directories which contain files to process as either:
@@ -105,27 +99,16 @@
        (map #(.getParent %))
        distinct))
 
-(defn- sort-it
-  "Default to descending sort"
-  [data sort direc]
-  (cond
-    (nil? sort)           (sort-by :sw/path data)
-    (nil? direc)          (sort-by (keyword sort) data)
-    (= direc "ascending") (sort-by (keyword sort) data)
-    :else                 (reverse (sort-by (keyword sort) data))))
-
-(defn- read-data [f] (merge (file-2-map f) (edn/read-string (slurp f))))
-
 (defn slurp-data
   [path sort direc limit]
   (let [qr (quantum-resource path "data" se/data-path)]
     (if (.isDirectory qr)
-      (let [a (for [f (edn-files (.listFiles qr) true)] (read-data f))
+      (let [a (:sw/contents (file-tree qr))
             b (sort-it a sort direc)]
         (if limit
           (vec (take (Integer. (re-find  #"\d+" limit)) b))
           (vec b)))
-      (read-data qr))))
+      (file-tree qr))))
 
 (defn hick-file
  "Converts a HMTL file into hickory"

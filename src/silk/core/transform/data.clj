@@ -19,9 +19,11 @@
 
 (defn- get-data
   [d v]
-  (if (= v "sw/path")
-    (sp/update-extension (sp/relativise-> (se/project-data-path) (:sw/path d)) "html")
-    (str (get-in d (map keyword (split v #"\."))))))
+  (let [ks (map keyword (split v #"\."))
+        r  (str (get-in d ks))]
+    (if (= (last ks) :sw/path)
+      (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
+      r)))
 
 (defn- inject-text
   [hick d]
