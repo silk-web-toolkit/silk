@@ -98,7 +98,7 @@
   [hick]
   (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-source])
                             (get-in hick [:attrs :data-sw-sort])
-                            (get-in hick [:attrs :data-sw-dir])
+                            (get-in hick [:attrs :data-sw-sort-dir])
                             (get-in hick [:attrs :data-sw-limit]))
         h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
    (cond
