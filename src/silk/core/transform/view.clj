@@ -52,7 +52,7 @@
      :content (sw/map-content
                 (sf/hick-file (template-path meta))
                 #(cond
-                  (= (:tag %) :title)               (assoc % :content vtitle)
+                  (and vtitle (= (:tag %) :title))  (assoc % :content vtitle)
                   (= (:tag %) :meta)                (add-meta-data % meta)
                   (get-in % [:attrs :data-sw-view]) (assoc % :content bhick)
                   :else                             %))}))
