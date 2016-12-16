@@ -2,12 +2,9 @@
   "Data related transformations.  "
   (:require [com.rpl.specter :as spec]
             [hickory.core :as h]
-            [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
-            [silk.core.transform.path :as sp]
             [silk.core.transform.walk :as sw])
-  (:use [clojure.string :only [split]]
-        [clojure.set    :only [rename-keys]]))
+  (:use [clojure.string :only [split]]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -21,9 +18,14 @@
   [d v]
   (let [ks (map keyword (split v #"\."))
         r  (str (get-in d ks))]
-    (if (= (last ks) :sw/path)
-      (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
-      r)))
+    r))
+  ; (:require [silk.core.input.env :as se]
+  ;           [silk.core.transform.path :as sp])
+  ; (let [ks (map keyword (split v #"\."))
+  ;       r  (str (get-in d ks))]
+  ;   (if (= (last ks) :sw/path)
+  ;     (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
+  ;     r)))
 
 (defn- inject-text
   [hick d]
@@ -42,7 +44,7 @@
         n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)
-       (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
+       (update-in [:attrs] #(applspecy dissoc %1 %2) (keys s-attrs)))))
 
 (defn- data-level
   "Data level based on deepest data-sw-* value .e.g items.childs"
@@ -74,7 +76,7 @@
                               (next ks)
                               (get d2 (first ks))
                               (conj ks2 (fnext ks)))
-      :else                 d)))
+      :else                 d)))spec
 
 (defn- inject-in
   [hick data ks]
@@ -96,11 +98,11 @@
 
 (defn- source
   [hick]
-  (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-source])
+  (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-dynamic-source])
                             (get-in hick [:attrs :data-sw-sort])
-                            (get-in hick [:attrs :data-sw-sort-dir])
+                            (get-in hick [:attrs :data-sw-sort-dir])spec
                             (get-in hick [:attrs :data-sw-limit]))
-        h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
+        h (update-in hick [:attrs] dissoc :data-sw-dynamic-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
    (cond
      (map? data)        (inject-in h [data] [0])
      (= (count data) 0) (assoc h :content [""])
@@ -114,6 +116,6 @@
 ;; =============================================================================
 
 (defn process-data
-  "Looks for data-sw-source and injects into it"
+  "Looks for data-sw-dynamic-source and injects into it"
   [hick]
-  (spec/transform (spec/walker #(get-in % [:attrs :data-sw-source])) #(source %) hick))
+  (spec/transform (spec/walker #(get-in % [:attrs :data-sw-dynamic-source])) #(source %) hick))

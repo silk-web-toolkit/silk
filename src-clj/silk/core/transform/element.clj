@@ -2,8 +2,7 @@
   "Artifact element transformation, for example attribute rewriting for
    page elements.  Initially mimetype for content is HTML5.  Principally
    we are working with a view driven pipeline."
-  (:require [com.rpl.specter :as spec]
-            [silk.core.input.env :as se]
+  (:require [silk.core.input.env :as se]
             [silk.core.transform.path :as sp]
             [silk.core.transform.walk :as sw])
   (import java.io.File))
