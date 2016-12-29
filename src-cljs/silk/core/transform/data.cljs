@@ -10,22 +10,17 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- repeating-tag? [t] (.contains [:ul :ol :tbody] t))
+(defn- repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
+; changed
 (defn- get-data
   [d v]
+  (println ">>>>>>>>>>" d)
   (let [ks (map keyword (split v #"\."))
         r  (str (get-in d ks))]
     r))
-  ; (:require [silk.core.input.env :as se]
-  ;           [silk.core.transform.path :as sp])
-  ; (let [ks (map keyword (split v #"\."))
-  ;       r  (str (get-in d ks))]
-  ;   (if (= (last ks) :sw/path)
-  ;     (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
-  ;     r)))
 
 (defn- inject-text
   [hick d]
@@ -44,7 +39,7 @@
         n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)
-       (update-in [:attrs] #(applspecy dissoc %1 %2) (keys s-attrs)))))
+       (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
 
 (defn- data-level
   "Data level based on deepest data-sw-* value .e.g items.childs"
@@ -76,7 +71,7 @@
                               (next ks)
                               (get d2 (first ks))
                               (conj ks2 (fnext ks)))
-      :else                 d)))spec
+      :else                 d)))
 
 (defn- inject-in
   [hick data ks]
@@ -96,11 +91,12 @@
             (inject-attr dl-data))
         h)))))
 
+; changed
 (defn- source
   [hick]
   (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-dynamic-source])
                             (get-in hick [:attrs :data-sw-sort])
-                            (get-in hick [:attrs :data-sw-sort-dir])spec
+                            (get-in hick [:attrs :data-sw-sort-dir])
                             (get-in hick [:attrs :data-sw-limit]))
         h (update-in hick [:attrs] dissoc :data-sw-dynamic-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
    (cond
@@ -115,6 +111,7 @@
 ;; Data transformations
 ;; =============================================================================
 
+; changed
 (defn process-data
   "Looks for data-sw-dynamic-source and injects into it"
   [hick]

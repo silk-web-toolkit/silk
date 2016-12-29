@@ -12,7 +12,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- repeating-tag? [t] (.contains [:ul :ol :tbody] t))
+(defn- repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
