@@ -17,7 +17,6 @@
 ; changed
 (defn- get-data
   [d v]
-  (println ">>>>>>>>>>" d)
   (let [ks (map keyword (split v #"\."))
         r  (str (get-in d ks))]
     r))
