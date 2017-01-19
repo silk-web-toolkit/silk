@@ -3,9 +3,118 @@
     <meta charset="utf-8" />
   </head>
   <body>
-    <ul data-sw-dynamic-source="items.edn">
-      <li data-sw-text="title"></li>
-    </ul>
+    <p>Tests various components and shows the expected output</p>
+    <table border="0" cellspacing="2" cellpadding="2" width="100%">
+      <thead>
+        <tr><th>Silk Generated</th><th>Expected</th></tr>
+      </thead>
+      <tbody>
+        <tr valign="top">
+          <td>
+            <h2>list none nested data</h2>
+            <ul data-sw-dynamic-source="items.edn">
+              <li data-sw-text="title"></li>
+            </ul>
+            <h2>list nested data</h2>
+            <ul data-sw-dynamic-source="items.edn">
+              <li>
+                <h3 data-sw-text="title">placeholder for title</h3>
+                <p data-sw-text="description">placeholder for description</p>
+                <ol>
+                  <li>
+                    <a data-sw-text="links.title" data-sw-href="links.href" href="#">placeholder for link</a>
+                    <ul>
+                      <li>
+                        <span data-sw-text="links.title">placeholder for title</span> -
+                        <span data-sw-text="links.contents.description">placeholder for description</span>
+                        <ul>
+                          <li>
+                            <span data-sw-text="links.contents.subs.node">placeholder for node</span>
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                    <ol>
+                      <li>
+                        <span data-sw-text="links.same-levels.description">placeholder for descripton</span>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </td>
+          <td>
+            <h2>list none nested data</h2>
+            <ul>
+              <li data-sw-text="title">item 1</li>
+              <li data-sw-text="title">item 2</li>
+            </ul>
+
+            <h2>list nested data</h2>
+            <ul>
+              <li>
+                <h3>item 1</h3>
+                <p>Item 1 should have 1 link</p>
+                <ol>
+                  <li>
+                    <a href="http://www.silkyweb.org">Silk Home Page</a>
+                    <ul>
+                      <li><span>Silk Home Page - content 1</span></li>
+                    </ul>
+                  </li>
+                </ol>
+              </li>
+              <li>
+                <h3>item 2</h3>
+                <p>Item 2 should have 4 links</p>
+                <ol>
+                  <li>
+                    <a href="http://silk-web-toolkit.github.io/blank-template/">Blank Template Example</a>
+                    <ul>
+                      <li><span>Blank Template Example - content 1</span></li>
+                      <li><span>Blank Template Example - content 2</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="http://silk-web-toolkit.github.io/sourced-component/">Sourced Component Example</a>
+                    <ul>
+                      <li><span>Sourced Component Example - content 1</span></li>
+                      <li><span>Sourced Component Example - content 2</span></li>
+                      <li><span>Sourced Component Example - content 3</span></li>
+                    </ul>
+                    <ol>
+                      <li>Hey look at me I'm on the same level</li>
+                    </ol>
+                  </li>
+                  <li>
+                    <a href="http://silk-web-toolkit.github.io/tree-component/">Tree Component Example</a>
+                    <ul>
+                      <li><span>Tree Component Example - content 1</span></li>
+                      <li>
+                        <span>Tree Component Example - content 2</span>
+                        <ul><li><span>Im a sub node</span></li></ul>
+                      </li>
+                      <li><span>Tree Component Example - content 3</span></li>
+                      <li><span>Tree Component Example - content 4</span></li>
+                    </ul>
+                  </li>
+                  <li>
+                    <a href="http://silk-web-toolkit.github.io/blog/">Blog Example</a>
+                    <ul>
+                      <li><span>Blog Example - content 1</span></li>
+                      <li><span>Blog Example - content 2</span></li>
+                      <li><span>Blog Example - content 3</span></li>
+                      <li><span>Blog Example - content 4</span></li>
+                      <li><span>Blog Example - content 5</span></li>
+                    </ul>
+                  </li>
+                </ol>
+              </li>
+            </ul>
+          </td>
+        </tr>
+      </table>
   </body>
   <script type="text/javascript" src="main.js"></script>
 </html>
