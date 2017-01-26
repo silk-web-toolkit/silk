@@ -1,16 +1,28 @@
 (ns silk.core.transform.postprocess
   ""
-  (:require [me.raynes.laser :as l]
+  (:require [com.rpl.specter :as spec]
+            [hickory.core :as h]
             [silk.core.transform.path :as sp]
-            [clojure.string :as str]))
+            [clojure.string :as string]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
 (defn- silk-text-node
-  [n]
-  (l/select (l/parse n) (l/attr? :data-sw-content)))
+  [html]
+  (spec/select
+    (spec/walker #(get-in % [:attrs :data-sw-content]))
+    (h/as-hickory (h/parse html))))
+
+(defn text
+  "Returns the text value of a node and its contents."
+  [node]
+  (cond
+   (string? node) node
+   (and (map? node)
+        (not= (:type node) :comment)) (string/join (map text (:content node)))
+   :else ""))
 
 (defn- get-title
   "Get the title from the markup or filename and add section bookmark"
@@ -21,7 +33,7 @@
 
 (defn- condensed
   [text]
-  (str/replace text #"\s+" " "))
+  (string/replace text #"\s+" " "))
 
 (defn- escaped
   [text]
@@ -49,6 +61,6 @@
           (for [{:keys [nav path content]} f]
             (for [node (silk-text-node content)]
               { :title (get-title nav path node)
-                :text (escaped (condensed (l/text node)))
+                :text (escaped (condensed (text node)))
                 :tags ""
                 :loc (get-location path node)})))})))

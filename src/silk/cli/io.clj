@@ -52,7 +52,7 @@
     (when (do/exists-dir? m) (do/copy-file-children m s))))
 
 (defn silk-project? []
-  (and (do/exists-dir? (se/views-path)) (do/exists-dir? (se/templates-path))))
+  (and (do/exists-dir? (se/views-path)) (do/exists-dir? (se/project-templates-path))))
 
 ;; last spun time and silk projects both live in silk home
 (defn silk-configured? [] (do/exists-dir? se/silk-home))
@@ -97,10 +97,12 @@
       (for [path (sf/get-data-directories)]
         (if (is-detail? path #".edn")
           (let [f (file path)
-                tpl (file (str se/templates-details-path (.getName f) ".html"))]
-            (if (.exists (file tpl))
-              (pipes/data-detail-pipeline-> (.listFiles f) tpl live?)
-              nil))
+                tpl (file (str (se/project-details-path) (.getName f) ".html"))]
+            (when (.exists (file tpl))
+              (-> (pipes/data-detail-pipeline-> (.listFiles f) tpl)
+                  (pipes/gen-nav-data-pipeline->)
+                  (pipes/inject-data-pipeline->)
+                  (pipes/html-pipeline-> live?))))
           (do-index-pages path))))))
 
 (defn create-data-driven-pages [ddp]

@@ -1,5 +1,5 @@
 (ns silk.core.transform.preprocess
-  (:require [me.raynes.laser :as l]
+  (:require [com.rpl.specter :as spec]
             [me.rossputin.diskops :as do]
             [silk.core.input.env :as se]
             [silk.core.transform.path :as sp])
@@ -12,8 +12,8 @@
 
 (defn- view-data
   "Create .edn data files for each view, one level deep."
-  [name path nav priority parsed]
-  (if nav
+  [name path nav priority content]
+  (when nav
     (let [data (assoc {} :title nav :path path :priority priority)
           fname (str se/sw-views-path (do/fs) (sp/update-extension name "edn"))]
       (.mkdirs (File. se/sw-views-path))
@@ -22,16 +22,17 @@
 (defn- bookmark-data
   "Create .edn data files foreach fragment id, page jumps, inside a view, one
   level deep."
-  [name path nav priority parsed]
+  [name path nav priority content]
   (let [calc-path (str se/sw-bookmarks-path (do/fs) (sp/basename path))
-        sections (l/select parsed (l/and
-          (l/negate (l/element= "body")) (l/attr? :data-sw-nav)
-          (l/or (l/attr? :id) (l/attr? :name))))]
+        sections (spec/select (spec/walker #(and (get-in % [:attrs :data-sw-nav])
+                                                 (or (get-in % [:attrs :id])
+                                                     (get-in % [:attrs :name]))))
+                              content)]
     (doseq [[idx sec] (map-indexed vector sections)]
       (let [id (get-in sec [:attrs :id])
             title (get-in sec [:attrs :data-sw-nav])
             priority (format "%03d" idx)
-            data (assoc {} :title title :path id :priority priority)
+            data (assoc {} :title title :path (str "#" id) :priority priority)
             fname (str calc-path (do/fs) priority "-" id ".edn")]
         (.mkdirs (File. calc-path))
         (spit fname (pr-str data))))))
@@ -45,13 +46,13 @@
 ;   [])
 
 
-;; =============================================================================
-;; Preprocess transformation functions.
-;; =============================================================================
+; ;; =============================================================================
+; ;; Preprocess transformation functions.
+; ;; =============================================================================
 
 (defn preprocess->
   "Generates navigation data for menu components."
-  [t]
-  (doseq [{:keys [name path nav priority content]} t]
-    (view-data name path nav priority (l/parse content))
-    (bookmark-data name path nav priority (l/parse content))))
+  [payload]
+  (doseq [{:keys [name path nav priority content]} payload]
+    (view-data name path nav priority content)
+    (bookmark-data name path nav priority content)))

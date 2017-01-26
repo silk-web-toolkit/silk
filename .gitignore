@@ -5,6 +5,7 @@
 /rpmbuild
 .DS_Store
 *.jar
+.nrepl-port
 .lein-repl-history
 .lein-deps-sum
 .lein-repl-history
