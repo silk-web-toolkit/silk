@@ -5,7 +5,7 @@
                  [com.taoensso/timbre "4.7.4"]
                  [pathetic "0.5.1"]
                  [hickory "0.7.0"]
-                 [com.rpl/specter "0.13.2"]
+                 [com.rpl/specter "0.13.1"]
                  [me.rossputin/diskops "0.4.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojars.zcaudate/watchtower "0.1.2"]
