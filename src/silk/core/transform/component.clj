@@ -12,7 +12,7 @@
   [comp-hickory]
   (let [path (:data-sw-component (:attrs comp-hickory))
         f (sf/component path)
-        c (hs/select (hs/child (hs/tag :body) hs/any) (sf/hick-file f))
+        c (-> (hs/select (hs/tag :body) (sf/hick-file f)) first :content)
         old (spec/select (spec/walker #(:data-sw-component %)) c)]
     ; Make sure the component does not call itself
     (if (some #(= (:data-sw-component %) path) old)
