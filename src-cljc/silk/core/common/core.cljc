@@ -1,30 +1,29 @@
-(ns silk.core.transform.data
-  "Data related transformations.  "
-  (:require [com.rpl.specter :as spec]
+(ns silk.core.common.core
+  #?(:clj (:require [clojure.string :refer [split]]
             [hickory.core :as h]
+            [com.rpl.specter :as spec]
+            [silk.core.common.walk :as sw]
             [silk.core.input.env :as se]
-            [silk.core.input.file :as sf]
-            [silk.core.transform.path :as sp]
-            [silk.core.common.walk :as sw])
-  (:use [clojure.string :only [split]]))
+            [silk.core.transform.path :as sp])
+     :cljs (:require [clojure.string :refer [split]]
+                     [hickory.core :as h]
+                     [com.rpl.specter :as spec]
+                     [silk.core.common.walk :as sw])))
 
-;; =============================================================================
-;; Helper functions
-;; =============================================================================
+(defn repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
 
-(defn- repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
+(defn silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
-(defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
-
-(defn- get-data
+(defn get-data
   [d v]
   (let [ks (map keyword (split v #"\."))
         r  (str (get-in d ks))]
-    (if (= (last ks) :sw/path)
+    #?(:clj (if (= (last ks) :sw/path)
       (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
-      r)))
+      r))
+    #?(:cljs r)))
 
-(defn- inject-text
+(defn inject-text
   [hick d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
     (let [t (get-data d v)
@@ -34,7 +33,7 @@
           (update-in [:attrs] dissoc :data-sw-text)))
     hick))
 
-(defn- inject-attr
+(defn inject-attr
   [hick d]
   (let [attrs (:attrs hick)
         s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
@@ -43,7 +42,7 @@
        (update-in [:attrs] merge n-attrs)
        (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
 
-(defn- data-level
+(defn data-level
   "Data level based on deepest data-sw-* value .e.g items.childs"
   [hick]
   (let [list1 (sw/map-content hick #(when (or (= hick %) (not (repeating-tag? (:tag %)))) %))
@@ -75,7 +74,7 @@
                               (conj ks2 (fnext ks)))
       :else                 d)))
 
-(defn- inject-in
+(defn inject-in
   [hick data ks]
   (def drill? false)
   (sw/map-content hick (fn [h]
@@ -93,26 +92,18 @@
             (inject-attr dl-data))
         h)))))
 
-(defn- source
-  [hick]
-  (let [data (sf/slurp-data (get-in hick [:attrs :data-sw-source])
-                            (get-in hick [:attrs :data-sw-sort])
-                            (get-in hick [:attrs :data-sw-sort-dir])
-                            (get-in hick [:attrs :data-sw-limit]))
-        h (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
-   (cond
-     (map? data)        (inject-in h [data] [0])
-     (= (count data) 0) (assoc h :content [""])
-     :else              (spec/transform
-                          (spec/walker #(repeating-tag? (:tag %)))
-                          #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % data [i]))) data)))
-                          h))))
+(defn sort-it
+  "Default to descending sort"
+  [data sort direc]
+  (if (sequential? data)
+    (cond
+      (nil? sort)           (sort-by :sw/path data)
+      (nil? direc)          (sort-by (keyword sort) data)
+      (= direc "ascending") (sort-by (keyword sort) data)
+      :else                 (reverse (sort-by (keyword sort) data)))
+    data))
 
-;; =============================================================================
-;; Data transformations
-;; =============================================================================
-
-(defn process-data
-  "Looks for data-sw-source and injects into it"
-  [hick]
-  (spec/transform (spec/walker #(get-in % [:attrs :data-sw-source])) #(source %) hick))
+(defn as-seq
+  [nodes]
+  (for [i (range (. nodes -length))]
+    (.item nodes i)))

@@ -1,6 +1,6 @@
-(defproject org.silkyweb/silk "0.8.0"
+(defproject org.silkyweb/silk "0.9.0-20170131130000"
   :description "Silk static and dynamic publishing toolkit."
-  :source-paths ["src-clj"]
+  :source-paths ["src-clj" "src-cljc"]
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.293"]

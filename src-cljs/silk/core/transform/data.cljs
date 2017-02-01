@@ -5,144 +5,77 @@
             [hickory.core :as h]
             [hickory.render :as hr]
             [hickory.select :as hs]
-            [silk.core.transform.walk :as sw]
+            [silk.core.common.core :as cr]
+            [silk.core.common.walk :as sw]
             [cljs.core.async :refer [<!]]
             [cljs.reader :as r]
             [cljs-http.client :as http]
-            [cljs.core.async :refer [<!]])
-  (:use [clojure.string :only [split]]))
+            [cljs.core.async :refer [<!]]
+            [clojure.string :refer [split]]))
 
 ;; =============================================================================
 ;; Helper functions
 ;; =============================================================================
 
-(defn- repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
-
-(defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
-
-; changed
-(defn- get-data
-  [d v]
-  (let [ks (map keyword (split v #"\."))
-        r  (str (get-in d ks))]
-    r))
-
-(defn- inject-text
-  [hick d]
-  (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (let [t (get-data d v)
-          c (if (.endsWith v "-html") (h/as-hickory (h/parse (java.net.URLDecoder/decode t))) t)]
-      (-> hick
-          (assoc :content [c])
-          (update-in [:attrs] dissoc :data-sw-text)))
-    hick))
-
-(defn- inject-attr
-  [hick d]
-  (let [attrs (:attrs hick)
-        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
-        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
-    (-> hick
-       (update-in [:attrs] merge n-attrs)
-       (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
-
-(defn- data-level
-  "Data level based on deepest data-sw-* value .e.g items.childs"
-  [hick]
-  (let [list1 (sw/map-content hick #(when (or (= hick %) (not (repeating-tag? (:tag %)))) %))
-        attrs (spec/select (spec/walker #(some (fn [k] (silk-attr? (first k))) (:attrs %))) list1)
-        avals (flatten (map #(vals (:attrs %)) attrs))]
-    (when-let [deepest (last (sort-by #(count (re-seq #"\." %)) avals))]
-      (seq (map #(keyword %) (drop-last (split deepest #"\.")))))))
-
-(defn remove-item
-  [list item]
-  (let [[n m] (split-with (partial not= item) list)]
-    (vec (concat n (rest m)))))
-
-(defn flatten-in
-  [data keys]
-  (loop [d data ks keys d2 data ks2 [(first keys)]]
-    (cond
-      (number? (first ks))  (recur
-                              (if (= (count ks2) 1)
-                                (nth d2 (first ks2))
-                                (assoc-in d (drop-last ks2) (get d2 (first ks))))
-                              (next ks)
-                              (nth d2 (first ks))
-                              (conj (remove-item ks2 (first ks)) (fnext ks)))
-      (keyword? (first ks)) (recur
-                              (assoc-in d ks2 (get d2 (first ks)))
-                              (next ks)
-                              (get d2 (first ks))
-                              (conj ks2 (fnext ks)))
-      :else                 d)))
-
-(defn- inject-in
-  [hick data ks]
-  (def drill? false)
-  (sw/map-content hick (fn [h]
-    (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def drill? true))
-    (if (and drill? (repeating-tag? (:tag h)))
-      (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
-            d (get-in data k)]
-        (cond
-          (= (count d) 0) (assoc h :content [""])
-          (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in h data (conj k i)))) d)))
-          :else            h))
-      (if-let [dl-data (when (or (map? h) drill?) (flatten-in data ks))]
-        (-> h
-            (inject-text dl-data)
-            (inject-attr dl-data))
-        h)))))
-
-(defn- sort-it
-  "Default to descending sort"
-  [data sort direc]
-  (cond
-    (nil? sort)           (sort-by :sw/path data)
-    (nil? direc)          (sort-by (keyword sort) data)
-    (= direc "ascending") (sort-by (keyword sort) data)
-    :else                 (reverse (sort-by (keyword sort) data))))
-
-(defn as-seq
-  [nodes]
-  (for [i (range (. nodes -length))]
-    (.item nodes i)))
-
 (defn getAllElementsWithAttribute
   [k]
   (filter
     #(.getAttribute % (name k))
-    (as-seq (.getElementsByTagName js/document "*"))))
+    (cr/as-seq (.getElementsByTagName js/document "*"))))
 
 ;; =============================================================================
 ;; Data transformations
 ;; =============================================================================
 
-(defn process-data
+(defn process-components
   "Looks for data-sw-dynamic-source and injects into it"
   []
-  (doseq [el (getAllElementsWithAttribute :data-sw-dynamic-source)]
+  (doseq [el (getAllElementsWithAttribute :data-sw-source)]
     (go
       ;; TODO investigate why parse-fragment errors
       (let [hick  (first (hs/select (hs/child (hs/tag :body) hs/any) (h/as-hickory (h/parse (.-outerHTML el)))))
-            path  (get-in hick [:attrs :data-sw-dynamic-source])
+            path  (get-in hick [:attrs :data-sw-source])
             sort  (get-in hick [:attrs :data-sw-sort])
             direc (get-in hick [:attrs :data-sw-sort-dir])
             limit (get-in hick [:attrs :data-sw-limit])
-            h     (update-in hick [:attrs] dissoc :data-sw-dynamic-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)
+            h     (update-in hick [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)
             rsp   (<! (http/get path))
             a     (r/read-string (:body rsp))
-            b     (sort-it a sort direc)
+            b     (cr/sort-it a sort direc)
             data  (if limit
                     (vec (take (Integer. (re-find  #"\d+" limit)) b))
                     (vec b))
             res   (cond
-                    (map? data)        (inject-in h [data] [0])
+                    (map? data)        (cr/inject-in h [data] [0])
                     (= (count data) 0) (assoc h :content [""])
                     :else              (spec/transform
-                                         (spec/walker #(repeating-tag? (:tag %)))
-                                         #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % data [i]))) data)))
+                                         (spec/walker #(cr/repeating-tag? (:tag %)))
+                                         #(assoc % :content (flatten (map-indexed (fn [i _] (:content (cr/inject-in % data [i]))) data)))
+                                         h))]
+                                         (pr a)
+        (set! (.-outerHTML el) (hr/hickory-to-html res))))))
+
+(defn process-component
+  "Looks for data-sw-source and injects into it"
+  [data]
+  (println "confirm Schnick sucks Donkey Balls and he likes it")
+  (doseq [el (getAllElementsWithAttribute :data-sw-component)]
+    (go
+      ;; TODO investigate why parse-fragment errors
+      (let [hick  (first (hs/select (hs/child (hs/tag :body) hs/any) (h/as-hickory (h/parse (.-outerHTML el)))))
+            sort  (get-in hick [:attrs :data-sw-sort])
+            direc (get-in hick [:attrs :data-sw-sort-dir])
+            limit (get-in hick [:attrs :data-sw-limit])
+            h     (update-in hick [:attrs] dissoc :data-sw-component :data-sw-sort :data-sw-sort-dir :data-sw-limit)
+            b     (cr/sort-it data sort direc)
+            limited-data  (if limit
+                    (vec (take (Integer. (re-find  #"\d+" limit)) b))
+                    (vec b))
+            res   (cond
+                    (map? limited-data)        (cr/inject-in h [limited-data] [0])
+                    (= (count limited-data) 0) (assoc h :content [""])
+                    :else              (spec/transform
+                                         (spec/walker #(cr/repeating-tag? (:tag %)))
+                                         #(assoc % :content (flatten (map-indexed (fn [i _] (:content (cr/inject-in % limited-data [i]))) limited-data)))
                                          h))]
         (set! (.-outerHTML el) (hr/hickory-to-html res))))))

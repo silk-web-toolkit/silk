@@ -4,7 +4,7 @@
    we are working with a view driven pipeline."
   (:require [silk.core.input.env :as se]
             [silk.core.transform.path :as sp]
-            [silk.core.transform.walk :as sw])
+            [silk.core.common.walk :as sw])
   (import java.io.File))
 
 ;; =============================================================================

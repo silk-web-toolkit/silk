@@ -1,4 +1,4 @@
-(ns silk.core.transform.walk
+(ns silk.core.common.walk
   "Walks hick contents and transform")
 
 ;; =============================================================================
