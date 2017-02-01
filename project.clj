@@ -1,11 +1,11 @@
-(defproject org.silkyweb/silk "0.8.0"
+(defproject org.silkyweb/silk "0.8.1"
   :description "Silk static and dynamic publishing toolkit."
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.taoensso/timbre "4.7.4"]
                  [pathetic "0.5.1"]
-                 [hickory "0.6.0"]
-                 [com.rpl/specter "0.13.0"]
+                 [hickory "0.7.0"]
+                 [com.rpl/specter "0.13.2"]
                  [me.rossputin/diskops "0.4.1"]
                  [org.clojure/tools.cli "0.3.5"]
                  [org.clojars.zcaudate/watchtower "0.1.2"]
