@@ -3,10 +3,10 @@
    Principally view driven."
   (:require [hickory.select :as hs]
             [com.rpl.specter :as spec]
+            [silk.core.common.walk :as sw]
             [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
-            [silk.core.transform.path :as sp]
-            [silk.core.transform.walk :as sw])
+            [silk.core.transform.path :as sp])
   (:use [clojure.string :only [lower-case split]]))
 
 ;; =============================================================================

@@ -8,6 +8,7 @@
                  [com.taoensso/timbre "4.7.4"]
                  [pathetic "0.5.1"]
                  [hickory "0.7.0"]
+                 [expectations "2.0.13"]
                  [com.rpl/specter "0.13.1"]
                  [me.rossputin/diskops "0.6.0"]
                  [org.clojure/tools.cli "0.3.5"]
@@ -15,7 +16,8 @@
                  [io.aviso/pretty "0.1.33"]
                  [org.apache.commons/commons-lang3 "3.5"]
                  [org.clojure/data.json "0.2.6"]]
-  :plugins [[lein-cljsbuild "1.1.5"]]
+  :plugins [[lein-cljsbuild "1.1.5"]
+            [lein-expectations "0.0.8"]]
   :cljsbuild {
     :builds [{:source-paths ["src-cljs"]
               :compiler {:output-to "resources/public/js/main.js"

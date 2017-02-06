@@ -1,11 +1,13 @@
 (ns silk.core.common.core
   #?(:clj (:require [clojure.string :refer [split]]
+            [com.rpl.specter :as spec]
             [hickory.core :as h]
             [com.rpl.specter :as spec]
             [silk.core.common.walk :as sw]
             [silk.core.input.env :as se]
             [silk.core.transform.path :as sp])
      :cljs (:require [clojure.string :refer [split]]
+                     [com.rpl.specter :as spec]
                      [hickory.core :as h]
                      [com.rpl.specter :as spec]
                      [silk.core.common.walk :as sw])))
@@ -103,7 +105,23 @@
       :else                 (reverse (sort-by (keyword sort) data)))
     data))
 
-(defn as-seq
-  [nodes]
-  (for [i (range (. nodes -length))]
-    (.item nodes i)))
+(defn as-seq [nodes] (for [i (range (. nodes -length))] (.item nodes i)))
+
+(defn process-component-with-data
+  "Looks for data-sw-source and injects into it"
+  [template data]
+  (let [sort  (get-in template [:attrs :data-sw-sort])
+        direc (get-in template [:attrs :data-sw-sort-dir])
+        limit (get-in template [:attrs :data-sw-limit])
+        h     (update-in template [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)
+        sorted-data     (sort-it data sort direc)
+        limited-data  (if limit
+                        (vec (take (Integer. (re-find  #"\d+" limit)) sorted-data))
+                        (vec sorted-data))]
+      (cond
+        (map? limited-data)        (inject-in h [limited-data] [0])
+        (= (count limited-data) 0) (assoc h :content [""])
+        :else                      (spec/transform
+                                      (spec/walker #(repeating-tag? (:tag %)))
+                                      #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % limited-data [i]))) limited-data)))
+                                      h))))
