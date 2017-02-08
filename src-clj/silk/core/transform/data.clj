@@ -12,7 +12,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- repeating-tag? [t] (some #(= t %) [:ul :ol :tbody]))
+(defn- repeating-tag? [hick] (some #(= (:tag hick) %) [:ul :ol :tbody]))
 
 (defn- silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
@@ -46,7 +46,7 @@
 (defn- data-level
   "Data level based on deepest data-sw-* value .e.g items.childs"
   [hick]
-  (let [list1 (sw/map-content hick #(when (or (= hick %) (not (repeating-tag? (:tag %)))) %))
+  (let [list1 (sw/map-content hick #(when (or (= hick %) (not (repeating-tag? %))) %))
         attrs (spec/select (spec/walker #(some (fn [k] (silk-attr? (first k))) (:attrs %))) list1)
         avals (flatten (map #(vals (:attrs %)) attrs))]
     (when-let [deepest (last (sort-by #(count (re-seq #"\." %)) avals))]
@@ -77,21 +77,19 @@
 
 (defn- inject-in
   [hick data ks]
-  (def drill? false)
   (sw/map-content hick (fn [h]
-    (when (not (or (= hick h) (repeating-tag? (:tag h)))) (def drill? true))
-    (if (and drill? (repeating-tag? (:tag h)))
-      (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
-            d (get-in data k)]
-        (cond
-          (= (count d) 0) (assoc h :content [""])
-          (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in h data (conj k i)))) d)))
-          :else            h))
-      (if-let [dl-data (when (or (map? h) drill?) (flatten-in data ks))]
-        (-> h
-            (inject-text dl-data)
-            (inject-attr dl-data))
-        h)))))
+    (cond
+      (= hick h)          h
+      (repeating-tag? h)  (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
+                                d (get-in data k)]
+                            (cond
+                              (= (count d) 0) (assoc h :content [""])
+                              (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in h data (conj k i)))) d)))
+                              :else            h))
+      :else               (let [dl-data (flatten-in data ks)]
+                            (-> h
+                                (inject-text dl-data)
+                                (inject-attr dl-data)))))))
 
 (defn- source
   [hick]
@@ -104,7 +102,7 @@
      (map? data)        (inject-in h [data] [0])
      (= (count data) 0) (assoc h :content [""])
      :else              (spec/transform
-                          (spec/walker #(repeating-tag? (:tag %)))
+                          (spec/walker #(repeating-tag? %))
                           #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % data [i]))) data)))
                           h))))
 
