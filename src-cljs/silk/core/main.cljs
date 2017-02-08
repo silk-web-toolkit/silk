@@ -7,8 +7,7 @@
             [hickory.render :as hr]
             [hickory.select :as hs]
             [silk.core.browser :as sb]
-            [silk.core.common.core :as cr]
-            [silk.core.transform.data :as dt]))
+            [silk.core.common.core :as cr]))
 
 (enable-console-print!)
 
