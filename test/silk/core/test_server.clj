@@ -7,4 +7,5 @@
 
 (let [f "test-data/html-sample.html"
       spun (sv/spin-component-with-data f "flibble" some-data)]
+      (println "spun : " spun)
   (expect #"A test title" spun))
