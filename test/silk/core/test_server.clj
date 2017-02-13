@@ -9,3 +9,8 @@
       spun (sv/spin-component-with-data f "flibble" some-data)]
       (println "spun : " spun)
   (expect #"A test title" spun))
+
+(let [f "test-data/html-source-sample.html"
+      spun (sv/spin-components f)]
+      (println "spun : " spun)
+  (expect #"A test title2" spun))
