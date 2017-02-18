@@ -95,13 +95,11 @@
 (defn sort-it
   "Default to descending sort"
   [data sort direc]
-  (if (sequential? data)
-    (cond
-      (nil? sort)           (sort-by :sw/path data)
-      (nil? direc)          (sort-by (keyword sort) data)
-      (= direc "ascending") (sort-by (keyword sort) data)
-      :else                 (reverse (sort-by (keyword sort) data)))
-    data))
+  (cond
+    (nil? sort)           (sort-by :sw/path data)
+    (nil? direc)          (sort-by (keyword sort) data)
+    (= direc "ascending") (sort-by (keyword sort) data)
+    :else                 (reverse (sort-by (keyword sort) data))))
 
 (defn as-seq [nodes] (for [i (range (. nodes -length))] (.item nodes i)))
 
@@ -111,15 +109,15 @@
   (let [sort  (get-in template [:attrs :data-sw-sort])
         direc (get-in template [:attrs :data-sw-sort-dir])
         limit (get-in template [:attrs :data-sw-limit])
-        h     (update-in template [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)
-        sorted-data     (sort-it data sort direc)
-        limited-data  (if limit
-                        (vec (take (Integer. (re-find  #"\d+" limit)) sorted-data))
-                        (vec sorted-data))]
+        h     (update-in template [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
       (cond
-        (map? limited-data)        (inject-in h [limited-data] [0])
-        (= (count limited-data) 0) (assoc h :content [""])
-        :else                      (spec/transform
-                                      (spec/walker #(repeating-tag? %))
-                                      #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % limited-data [i]))) limited-data)))
-                                      h))))
+        (map? data)        (inject-in h [data] [0])
+        (= (count data) 0) (assoc h :content [""])
+        :else              (let [s-data (sort-it data sort direc)
+                                 l-data (if limit
+                                          (vec (take (Integer. (re-find  #"\d+" limit)) s-data))
+                                          (vec s-data))]
+                             (spec/transform
+                               (spec/walker #(repeating-tag? %))
+                               #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % l-data [i]))) l-data)))
+                               h)))))

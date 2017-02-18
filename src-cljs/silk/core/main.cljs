@@ -1,13 +1,5 @@
 (ns silk.core.main
-  (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [cljs.core.async :refer [<!]]
-            [cljs.reader :as r]
-            [cljs-http.client :as http]
-            [hickory.core :as h]
-            [hickory.render :as hr]
-            [hickory.select :as hs]
-            [silk.core.browser :as sb]
-            [silk.core.common.core :as cr]))
+  (:require [silk.core.browser :as sb]))
 
 (enable-console-print!)
 
@@ -28,5 +20,5 @@
   ]
 )
 
-(sb/spin-component-with-data "whatever" some-data)
-;;(sb/spin-components)
+; (sb/spin-component-with-data js/document "whatever" some-data)
+(sb/spin-components js/document)

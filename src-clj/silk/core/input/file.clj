@@ -36,15 +36,6 @@
   [res]
   (map #(file-2-map %) (edn-files (file-seq res) false)))
 
-(defn- sort-it
-  "Default to descending sort"
-  [data sort direc]
-  (cond
-    (nil? sort)           (sort-by :sw/path data)
-    (nil? direc)          (sort-by (keyword sort) data)
-    (= direc "ascending") (sort-by (keyword sort) data)
-    :else                 (reverse (sort-by (keyword sort) data))))
-
 (defn- file-tree [#^File f]
  (if (.isDirectory f)
    (merge (file-2-map f) {:sw/contents (vec (map file-tree (edn-files (.listFiles f) true)))})
@@ -100,14 +91,10 @@
        distinct))
 
 (defn slurp-data
-  [path sort direc limit]
+  [path]
   (let [qr (quantum-resource path "data" se/data-path)]
     (if (.isDirectory qr)
-      (let [a (:sw/contents (file-tree qr))
-            b (sort-it a sort direc)]
-        (if limit
-          (vec (take (Integer. (re-find  #"\d+" limit)) b))
-          (vec b)))
+      (:sw/contents (file-tree qr))
       (file-tree qr))))
 
 (defn hick-file
