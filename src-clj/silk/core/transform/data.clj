@@ -16,8 +16,8 @@
 
 (defn process-data
   "Looks for data-sw-source and injects into it"
-  [hick]
+  [project hick]
   (spec/transform
     (spec/walker #(get-source %))
-    #(cr/process-component-with-data % (sf/slurp-data (get-source %)))
+    #(cr/process-component-with-data project % (sf/slurp-data project (get-source %)))
     hick))

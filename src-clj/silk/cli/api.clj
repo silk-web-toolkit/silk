@@ -16,55 +16,51 @@
 ;; =============================================================================
 
 (defn- spin
-  [live?]
+  [project live?]
   (io/display-spin-start)
   (io/check-silk-configuration)
-  (io/check-silk-project-structure)
-  (io/side-effecting-spin-io)
-  (let [view (-> (pipes/view-pipline->)
+  (io/check-silk-project-structure project)
+  (io/side-effecting-spin-io project)
+  (let [view (-> (pipes/view-pipline-> project)
                  (pipes/gen-nav-data-pipeline->)
-                 (pipes/inject-data-pipeline->)
-                 (pipes/html-pipeline-> live?))
-        data (io/get-data-driven-pipeline live?)
+                 (pipes/inject-data-pipeline-> project)
+                 (pipes/html-pipeline-> project live?))
+        data (io/get-data-driven-pipeline project live?)
         text (pipes/text-pipeline-> (concat view data))]
-    (io/create-view-driven-pages view)
-    (io/create-data-driven-pages data)
-    (io/create-tipue-search-content-file text))
-  (io/store-project-dir)
+    (io/create-view-driven-pages project view)
+    (io/create-data-driven-pages project data)
+    (io/create-tipue-search-content-file project text))
+  (io/store-project-dir project)
   (io/display-spin-end))
 
-(def spin-handled (io/handler spin io/handle-silk-project-exception))
+(defn- single-spin
+  [project live? trace?]
+  (let [spin-handled (io/handler spin io/handle-silk-project-exception)
+        spin-traced  (io/handler spin io/trace-silk-project-exception)]
+    (if trace?
+      (spin-traced  project live?)
+      (spin-handled project live?))))
 
-(def spin-traced (io/handler spin io/trace-silk-project-exception))
-
-(defn- spin-handler
-  [live? trace?]
-  (if trace?
-    (spin-traced live?)
-    (spin-handled live?)))
-
-(defn- reload
-  [live? trace?]
-  (spin-handler live? trace?)
+(defn- reload-spin
+  [project live? trace?]
+  (single-spin project live? trace?)
   (println "Watching for changes. Press enter to exit")
-  (let [cp se/current-project
-        sp (.getAbsolutePath (clojure.java.io/file (se/site-path)))]
-    (hawk/watch! [{:paths [se/current-project]
-                   :filter (fn [_ {:keys [file]}]
-                             (binding [se/current-project cp] ; current-project is lost otherwise
-                               (not (or (= (.getAbsolutePath file) cp)
-                                        (.startsWith (.getAbsolutePath file) sp)
-                                        (.isHidden file)))))
-                   :handler (fn [ctx e]
-                              (binding [se/current-project cp] ; current-project is lost otherwise
-                                (println (name (:kind e)) (sp/relativise-> cp (:file e)))
-                                (spin-handler live? trace?)
-                                (println "Watching for changes. Press enter to exit")
-                                ctx))}]))
-  (loop [input (read-line)]
-    (when-not (= "\n" input)
-      (System/exit 0)
-      (recur (read-line)))))
+  (let [sp  (.getAbsolutePath (clojure.java.io/file (se/site-path project)))
+        flt (fn [_ {:keys [file]}]
+              (not (or (= (.getAbsolutePath file) project)
+                       (.startsWith (.getAbsolutePath file) sp)
+                       (.isDirectory file)
+                       (.isHidden file))))
+        hnd (fn [ctx {file :file kind :kind}]
+              (println (name kind) (sp/relativise-> project file))
+              (single-spin project live? trace?)
+              (println "Watching for changes. Press enter to exit")
+              ctx)
+        wt (hawk/watch! [{:paths [project] :filter flt :handler hnd}])]
+    (loop [input (read-line)]
+      (when-not (= "\n" input)
+        (System/exit 0)
+        (recur (read-line))))))
 
 (defn- sites
   []
@@ -78,13 +74,14 @@
             date-str (.format (new java.text.SimpleDateFormat) date)]
         (println  "Last spun:" date-str path)))))
 
-(defn- calc-project-path
-  [directory]
-  (if (empty? directory)
-    (do/pwd)
-    (if (.endsWith directory (do/fs))
-      (subs directory 0 (.lastIndexOf directory (do/fs)))
-      directory)))
+(defn- project-path
+  [d]
+  (.getAbsolutePath
+    (clojure.java.io/file
+      (cond
+        (empty? d)            (do/pwd)
+        (.endsWith d (do/fs)) (subs d 0 (.lastIndexOf d (do/fs)))
+        :else                 d))))
 
 ;; =============================================================================
 ;; Public API
@@ -94,7 +91,6 @@
 
 (defn spin-or-reload
   [reload? directory live? trace?]
-  (binding [se/current-project (.getAbsolutePath (clojure.java.io/file (calc-project-path directory)))]
-    (if reload?
-      (reload live? trace?)
-      (spin-handler live? trace?))))
+  (if reload?
+    (reload-spin (project-path directory) live? trace?)
+    (single-spin (project-path directory) live? trace?)))

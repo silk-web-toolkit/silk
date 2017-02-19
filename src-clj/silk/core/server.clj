@@ -10,7 +10,7 @@
   [tpl id data]
   (hr/hickory-to-html
     (spec/transform (spec/walker #(= (get-in % [:attrs :id]) id))
-                    #(cr/process-component-with-data % data)
+                    #(cr/process-component-with-data "" % data)
                     (sf/hick-file tpl))))
 
 (defn spin-components
@@ -20,5 +20,5 @@
     (spec/transform (spec/walker #(get-in % [:attrs :data-sw-source]))
                     #(let [path (get-in % [:attrs :data-sw-source])
                            data (edn/read-string (slurp path))]
-                      (cr/process-component-with-data % data))
+                      (cr/process-component-with-data "" % data))
                     (sf/hick-file tpl))))

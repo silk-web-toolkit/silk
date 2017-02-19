@@ -25,7 +25,7 @@
   [tpl id data]
   (let [template (elementById tpl id)
         hick (hickorify template)
-        res (cr/process-component-with-data hick data)]
+        res (cr/process-component-with-data "" hick data)]
     (set! (.-outerHTML template) (hr/hickory-to-html res))))
 
 (defn spin-components
@@ -37,5 +37,5 @@
             path (get-in hick [:attrs :data-sw-source])
             rsp  (<! (http/get path))
             data (r/read-string (:body rsp))
-            res  (cr/process-component-with-data hick data)]
+            res  (cr/process-component-with-data "" hick data)]
         (set! (.-outerHTML el) (hr/hickory-to-html res))))))

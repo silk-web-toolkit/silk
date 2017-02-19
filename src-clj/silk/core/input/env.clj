@@ -8,8 +8,6 @@
 ;; Environmental properties, see namespace comment
 ;; =============================================================================
 
-(def ^:dynamic current-project "")
-
 (defonce os (System/getProperty "os.name"))
 
 (defonce user-home (System/getProperty (str "user.home")))
@@ -30,23 +28,24 @@
     "SILK_COMPONENTS_PATH"
     (str silk-home (do/fs) "components")))
 
-(defn meta-path [] (str current-project (do/fs) "meta" (do/fs)))
+(defn meta-path [project] (str project (do/fs) "meta" (do/fs)))
 
-(defn resource-path [] (str current-project (do/fs) "resource" (do/fs)))
+(defn resource-path [project] (str project (do/fs) "resource" (do/fs)))
 
-(defn site-path [] (str current-project (do/fs) "site" (do/fs)))
+(defn site-path [project] (str project (do/fs) "site" (do/fs)))
 
-(defn views-path [] (str current-project (do/fs) "view" (do/fs)))
+(defn views-path [project] (str project (do/fs) "view" (do/fs)))
 
-(defn project-data-path [] (str current-project (do/fs) "data" (do/fs)))
+(defn project-data-path [project] (str project (do/fs) "data" (do/fs)))
 
 ;; configured to work with static spins and server compile time 'page' artefact caching
-(defn project-templates-path []
+(defn project-templates-path
+  [project]
   (get (System/getenv)
     "SILK_TEMPLATES_PATH"
-    (str current-project (do/fs) "template" (do/fs))))
+    (str project (do/fs) "template" (do/fs))))
 
-(defn project-details-path [] (str (project-templates-path) "detail" (do/fs)))
+(defn project-details-path [project] (str (project-templates-path project) "detail" (do/fs)))
 
 (defonce data-path (str silk-home (do/fs) "data"))
 

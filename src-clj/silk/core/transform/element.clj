@@ -28,12 +28,12 @@
   "Relativise an attribute value v using the source of the attributes location
    within a project (view location).
    Mode enables different behaviour across different intended environments."
-  [v p live?]
+  [project v p live?]
   (let [vp (.getParent (File. p))]
     (if vp
       (if (valid-asset? v)
-        (let [rel (sp/relativise-> (.getParent (File. (se/views-path) p))
-                   (se/views-path))]
+        (let [rel (sp/relativise-> (.getParent (File. (se/views-path project) p))
+                                   (se/views-path project))]
           (str rel "/" v))
         v)
       (if live?
@@ -50,10 +50,10 @@
    Payload is a map constructed with :path and :content keys where path
    points to content.
    Mode enables different behaviour across different intended environments."
-  [tag attr payload live?]
+  [project tag attr payload live?]
   (assoc payload :content (sw/map-content (:content payload)
     (fn
       [h]
       (if-let [v (and (= (:tag h) tag) (get-in h [:attrs attr]))]
-        (assoc-in h [:attrs attr] (relativise-attr v (:path payload) live?))
+        (assoc-in h [:attrs attr] (relativise-attr project v (:path payload) live?))
         h)))))

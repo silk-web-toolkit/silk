@@ -15,16 +15,16 @@
 
 (defn view-pipline->
   "Combines views, templates and components "
-  []
-  (->> (sv/template-wrap->)
-       (map #(assoc % :content (sc/process-components (:content %))))))
+  [project]
+  (->> (sv/template-wrap-> project)
+       (map #(assoc % :content (sc/process-components project (:content %))))))
 
 (defn data-detail-pipeline->
   "Transform data in a pipeline suitable for creating detail pages for silk
    content based directory contents."
-  [path tpl]
-  (->> (sv/template-wrap-detail-> {:path path :template tpl})
-       (map #(assoc % :content (sc/process-components (:content %))))))
+  [project path tpl]
+  (->> (sv/template-wrap-detail-> project {:path path :template tpl})
+       (map #(assoc % :content (sc/process-components project (:content %))))))
 
 (defn gen-nav-data-pipeline->
   "Transform data in a pipeline into a data source edn files.
@@ -36,20 +36,20 @@
 
 (defn inject-data-pipeline->
   "Reads data source and injects data into markup"
-  [payload]
+  [payload project]
   (->> payload
-      (map #(assoc % :content (sd/process-data (:content %))))))
+      (map #(assoc % :content (sd/process-data project (:content %))))))
 
 (defn html-pipeline->
   "Relativisation of uri's allows different behaviours across different
    intended environments & converts Hickory into HTML"
-  [payload live?]
+  [payload project live?]
   (->> payload
-       (map #(sel/relativise-attrs :link :href % live?))
-       (map #(sel/relativise-attrs :img :src % live?))
-       (map #(sel/relativise-attrs :script :src % live?))
-       (map #(sel/relativise-attrs :a :href % live?))
-       (map #(sel/relativise-attrs :form :action % live?))
+       (map #(sel/relativise-attrs project :link :href % live?))
+       (map #(sel/relativise-attrs project :img :src % live?))
+       (map #(sel/relativise-attrs project :script :src % live?))
+       (map #(sel/relativise-attrs project :a :href % live?))
+       (map #(sel/relativise-attrs project :form :action % live?))
        (map #(assoc % :content (hr/hickory-to-html (:content %))))))
 
 (defn text-pipeline->

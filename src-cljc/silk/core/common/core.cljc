@@ -17,18 +17,18 @@
 (defn silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
 (defn get-data
-  [d v]
+  [project d v]
   (let [ks (map keyword (split v #"\."))
         r  (str (get-in d ks))]
     #?(:clj (if (= (last ks) :sw/path)
-      (sp/update-extension (sp/relativise-> (se/project-data-path) r) "html")
+      (sp/update-extension (sp/relativise-> (se/project-data-path project) r) "html")
       r))
     #?(:cljs r)))
 
 (defn inject-text
-  [hick d]
+  [hick project d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (let [t (get-data d v)
+    (let [t (get-data project d v)
           c (if (.endsWith v "-html") (h/as-hickory (h/parse (java.net.URLDecoder/decode t))) t)]
       (-> hick
           (assoc :content [c])
@@ -36,10 +36,10 @@
     hick))
 
 (defn inject-attr
-  [hick d]
+  [hick project d]
   (let [attrs (:attrs hick)
         s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
-        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data d v)}))]
+        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data project d v)}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)
        (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
@@ -77,7 +77,7 @@
       :else                 d)))
 
 (defn inject-in
-  [hick data ks]
+  [project hick data ks]
   (sw/map-content hick (fn [h]
     (cond
       (= hick h)          h
@@ -85,12 +85,12 @@
                                 d (get-in data k)]
                             (cond
                               (= (count d) 0) (assoc h :content [""])
-                              (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in h data (conj k i)))) d)))
+                              (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in project h data (conj k i)))) d)))
                               :else            h))
       :else               (let [dl-data (flatten-in data ks)]
                             (-> h
-                                (inject-text dl-data)
-                                (inject-attr dl-data)))))))
+                                (inject-text project dl-data)
+                                (inject-attr project dl-data)))))))
 
 (defn sort-it
   "Default to descending sort"
@@ -105,19 +105,19 @@
 
 (defn process-component-with-data
   "Looks for data-sw-source and injects into it"
-  [template data]
+  [project template data]
   (let [sort  (get-in template [:attrs :data-sw-sort])
         direc (get-in template [:attrs :data-sw-sort-dir])
         limit (get-in template [:attrs :data-sw-limit])
         h     (update-in template [:attrs] dissoc :data-sw-source :data-sw-sort :data-sw-sort-dir :data-sw-limit)]
-      (cond
-        (map? data)        (inject-in h [data] [0])
-        (= (count data) 0) (assoc h :content [""])
-        :else              (let [s-data (sort-it data sort direc)
-                                 l-data (if limit
-                                          (vec (take (Integer. (re-find  #"\d+" limit)) s-data))
-                                          (vec s-data))]
-                             (spec/transform
-                               (spec/walker #(repeating-tag? %))
-                               #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in % l-data [i]))) l-data)))
-                               h)))))
+    (cond
+      (map? data)        (inject-in project h [data] [0])
+      (= (count data) 0) (assoc h :content [""])
+      :else              (let [s-data (sort-it data sort direc)
+                               l-data (if limit
+                                        (vec (take (Integer. (re-find  #"\d+" limit)) s-data))
+                                        (vec s-data))]
+                           (spec/transform
+                             (spec/walker #(repeating-tag? %))
+                             #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in project % l-data [i]))) l-data)))
+                             h)))))
