@@ -2,8 +2,10 @@
   (:require [me.rossputin.diskops :as do]
             [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
+            [silk.core.transform.path :as sp]
             [silk.core.transform.pipeline :as pipes]
-            [watchtower.core :as watch]
+            ; [watchtower.core :as watch]
+            [hawk.core :as hawk]
             [silk.cli.io :as io])
   (:use [clojure.string :only [split]])
   (import java.io.File)
@@ -35,28 +37,30 @@
 
 (def spin-traced (io/handler spin io/trace-silk-project-exception))
 
-(defn- reload-report
-  [payload live? trace?]
-  (io/display-files-changed payload)
-  (if trace? (spin-traced live?) (spin-handled live?))
-  (println "Press enter to exit"))
-
-(defn- reload-filter
-  "A file filter that removes Silk Site and hidden directories."
-  [f]
-  (not (or (.startsWith (.getCanonicalPath f) (se/site-path))
-           (.startsWith (.getCanonicalPath f) (str se/current-project (do/fs) ".")))))
+(defn- spin-handler
+  [live? trace?]
+  (if trace?
+    (spin-traced live?)
+    (spin-handled live?)))
 
 (defn- reload
   [live? trace?]
-  (future (watch/watcher [se/current-project]
-    (watch/rate 500) ;; poll every 500ms
-    (watch/file-filter watch/ignore-dotfiles) ;; ignore any dotfiles
-    (watch/file-filter reload-filter) ;; ignore files in Silk "site" directory
-    (watch/notify-on-start? true)   ;; Determines whether notifications are made
-    (watch/on-modify #(reload-report % live? trace?))
-    (watch/on-add #(reload-report % live? trace?))
-    (watch/on-delete #(reload-report % live? trace?))))
+  (spin-handler live? trace?)
+  (println "Watching for changes. Press enter to exit")
+  (let [cp se/current-project
+        sp (.getAbsolutePath (clojure.java.io/file (se/site-path)))]
+    (hawk/watch! [{:paths [se/current-project]
+                   :filter (fn [_ {:keys [file]}]
+                             (binding [se/current-project cp] ; current-project is lost otherwise
+                               (not (or (= (.getAbsolutePath file) cp)
+                                        (.startsWith (.getAbsolutePath file) sp)
+                                        (.isHidden file)))))
+                   :handler (fn [ctx e]
+                              (binding [se/current-project cp] ; current-project is lost otherwise
+                                (println (name (:kind e)) (sp/relativise-> cp (:file e)))
+                                (spin-handler live? trace?)
+                                (println "Watching for changes. Press enter to exit")
+                                ctx))}]))
   (loop [input (read-line)]
     (when-not (= "\n" input)
       (System/exit 0)
@@ -90,9 +94,7 @@
 
 (defn spin-or-reload
   [reload? directory live? trace?]
-  (binding [se/current-project (calc-project-path directory)]
+  (binding [se/current-project (.getAbsolutePath (clojure.java.io/file (calc-project-path directory)))]
     (if reload?
       (reload live? trace?)
-      (if trace?
-        (spin-traced live?)
-        (spin-handled live?)))))
+      (spin-handler live? trace?))))

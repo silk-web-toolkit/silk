@@ -2,7 +2,6 @@
   (:require [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
             [silk.core.transform.pipeline :as pipes]
-            [silk.core.transform.path :as sp]
             [clojure.java.io :refer [file]]
             [clojure.data.json :as json]
             [io.aviso.ansi :as aa]
@@ -36,11 +35,6 @@
   (println
     (str (aa/bold-green "SUCCESS: ")
          (aa/italic "Site spinning is complete, we hope you like it."))))
-
-(defn display-files-changed [files]
-  (println "Files changed in " se/current-project)
-  (doseq [file files]
-    (println (sp/relativise-> se/current-project (.getCanonicalPath file)))))
 
 (defn side-effecting-spin-io []
   (let [s (se/site-path) r (se/resource-path) m (se/meta-path)]

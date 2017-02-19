@@ -12,7 +12,7 @@
                  [com.rpl/specter "0.13.1"]
                  [me.rossputin/diskops "0.6.0"]
                  [org.clojure/tools.cli "0.3.5"]
-                 [org.clojars.zcaudate/watchtower "0.1.2"]
+                 [hawk "0.2.11"]
                  [io.aviso/pretty "0.1.33"]
                  [org.apache.commons/commons-lang3 "3.5"]
                  [org.clojure/data.json "0.2.6"]]
