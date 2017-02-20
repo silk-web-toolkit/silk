@@ -105,7 +105,8 @@
 
 (defn process-component-with-data
   "Looks for data-sw-source and injects into it"
-  [project template data]
+  ([template data] (process-component-with-data "" template data))
+  ([project template data]
   (let [sort  (get-in template [:attrs :data-sw-sort])
         direc (get-in template [:attrs :data-sw-sort-dir])
         limit (get-in template [:attrs :data-sw-limit])
@@ -120,4 +121,4 @@
                            (spec/transform
                              (spec/walker #(repeating-tag? %))
                              #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in project % l-data [i]))) l-data)))
-                             h)))))
+                             h))))))
