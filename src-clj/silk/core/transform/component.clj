@@ -9,9 +9,9 @@
 ;; =============================================================================
 
 (defn- load-comp
-  [comp-hickory]
+  [project comp-hickory]
   (let [path (:data-sw-component (:attrs comp-hickory))
-        f (sf/component path)
+        f (sf/component project path)
         c (-> (hs/select (hs/tag :body) (sf/hick-file f)) first :content)
         old (spec/select (spec/walker #(:data-sw-component %)) c)]
     ; Make sure the component does not call itself
@@ -27,6 +27,8 @@
 
 (defn process-components
   "Adds components"
-  [hick]
-  (let [n (spec/transform (spec/walker #(get-in % [:attrs :data-sw-component])) #(load-comp %) hick)]
-    (if (= hick n) n (process-components n))))
+  [project hick]
+  (let [n (spec/transform (spec/walker #(get-in % [:attrs :data-sw-component]))
+                          #(load-comp project %)
+                          hick)]
+    (if (= hick n) n (process-components project n))))

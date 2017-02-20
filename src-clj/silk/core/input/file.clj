@@ -36,15 +36,6 @@
   [res]
   (map #(file-2-map %) (edn-files (file-seq res) false)))
 
-(defn- sort-it
-  "Default to descending sort"
-  [data sort direc]
-  (cond
-    (nil? sort)           (sort-by :sw/path data)
-    (nil? direc)          (sort-by (keyword sort) data)
-    (= direc "ascending") (sort-by (keyword sort) data)
-    :else                 (reverse (sort-by (keyword sort) data))))
-
 (defn- file-tree [#^File f]
  (if (.isDirectory f)
    (merge (file-2-map f) {:sw/contents (vec (map file-tree (edn-files (.listFiles f) true)))})
@@ -57,17 +48,17 @@
 (defn template
   "Return a Silk template from the silk template directory given a filename f.
    A Silk template is raw markup."
-  [f]
-  (file (str (se/project-templates-path) f)))
+  [project f]
+  (file (str (se/project-templates-path project) f)))
 
 (defn quantum-resource
   "Return a Silk resource which may be in one of several places given a path.
    Initially component or datasource.  Both return a File.
    Typically used to source artifacts from either a local silk project directory,
    an env var root or silk home."
-  [rel-path local-root system-root]
+  [project rel-path local-root system-root]
   (let [item-path (str local-root (do/fs) rel-path)
-        local-res-path (str se/current-project (do/fs) item-path)
+        local-res-path (str project (do/fs) item-path)
         local-file (file local-res-path)
         reserve (system-root-resource rel-path system-root)
         home (file (str se/silk-home (do/fs) item-path))
@@ -79,11 +70,12 @@
       (.exists sw) sw
       :else (throw (Exception. (str "Can't find " item-path))))))
 
-(defn component [path]
-  (quantum-resource (str path ".html") "components" se/components-path))
+(defn component [project path]
+  (quantum-resource project (str path ".html") "components" se/components-path))
 
-(defn get-views []
-  (-> (remove #(.isDirectory %) (file-seq (file (se/views-path))))
+(defn get-views
+  [project]
+  (-> (remove #(.isDirectory %) (file-seq (file (se/views-path project))))
       (do/filter-exts ["html"])))
 
 (defn get-data-directories
@@ -92,22 +84,18 @@
      binary assets to be listed in an index page.
    Assume for now we will only generate detail pages from local data.  Unsure how
    to resolve shared data... it must not overwrite local etc."
-  []
-  (->> (get-data-meta (file (se/project-data-path)))
+  [project]
+  (->> (get-data-meta (file (se/project-data-path project)))
        (map #(file (:sw/path %)))
        (filter #(.isFile %))
        (map #(.getParent %))
        distinct))
 
 (defn slurp-data
-  [path sort direc limit]
-  (let [qr (quantum-resource path "data" se/data-path)]
+  [project path]
+  (let [qr (quantum-resource project path "data" se/data-path)]
     (if (.isDirectory qr)
-      (let [a (:sw/contents (file-tree qr))
-            b (sort-it a sort direc)]
-        (if limit
-          (vec (take (Integer. (re-find  #"\d+" limit)) b))
-          (vec b)))
+      (:sw/contents (file-tree qr))
       (file-tree qr))))
 
 (defn hick-file
