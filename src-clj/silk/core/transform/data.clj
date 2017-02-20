@@ -19,5 +19,5 @@
   [project hick]
   (spec/transform
     (spec/walker #(get-source %))
-    #(cr/process-component-with-data project % (sf/slurp-data project (get-source %)))
+    #(cr/splice-hick-with-data project % (sf/slurp-data project (get-source %)))
     hick))

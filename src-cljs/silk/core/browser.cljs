@@ -12,30 +12,30 @@
 (defn- hickorify [template]
   (first (hs/select (hs/child (hs/tag :body) hs/any) (h/as-hickory (h/parse (.-outerHTML template))))))
 
-(defn- elementById [tpl id] (.getElementById tpl (name id)))
+(defn- elementById [markup id] (.getElementById markup (name id)))
 
-(defn- elements [tpl] (.getElementsByTagName tpl "*"))
+(defn- elements [markup] (.getElementsByTagName markup "*"))
 
 (defn- elementsWithAttribute
-  [tpl k]
-  (filter #(.getAttribute % (name k)) (cr/as-seq (elements tpl))))
+  [markup k]
+  (filter #(.getAttribute % (name k)) (cr/as-seq (elements markup))))
 
-(defn spin-component-with-data
-  "Splices data with component with given id"
-  [tpl id data]
-  (let [template (elementById tpl id)
+(defn spin-by-id
+  "Splices markup restricted by given id and data"
+  [markup id data]
+  (let [template (elementById markup id)
         hick (hickorify template)
-        res (cr/process-component-with-data hick data)]
+        res (cr/splice-hick-with-data hick data)]
     (set! (.-outerHTML template) (hr/hickory-to-html res))))
 
-(defn spin-components
-  "Looks for data-sw-source and injects into it"
-  [tpl]
-  (doseq [el (elementsWithAttribute tpl :data-sw-source)]
+(defn spin-by-data-sw-source
+  "Splices markup restricted by data-sw-source, data is provided by data-sw-source attribute value"
+  [markup]
+  (doseq [el (elementsWithAttribute markup :data-sw-source)]
     (go
       (let [hick (hickorify el)
             path (get-in hick [:attrs :data-sw-source])
             rsp  (<! (http/get path))
             data (r/read-string (:body rsp))
-            res  (cr/process-component-with-data hick data)]
+            res  (cr/splice-hick-with-data hick data)]
         (set! (.-outerHTML el) (hr/hickory-to-html res))))))

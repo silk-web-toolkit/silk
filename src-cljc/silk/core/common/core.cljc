@@ -103,9 +103,9 @@
 
 (defn as-seq [nodes] (for [i (range (. nodes -length))] (.item nodes i)))
 
-(defn process-component-with-data
+(defn splice-hick-with-data
   "Looks for data-sw-source and injects into it"
-  ([template data] (process-component-with-data "" template data))
+  ([template data] (splice-hick-with-data "" template data))
   ([project template data]
   (let [sort  (get-in template [:attrs :data-sw-sort])
         direc (get-in template [:attrs :data-sw-sort-dir])

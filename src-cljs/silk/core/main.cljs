@@ -20,5 +20,5 @@
   ]
 )
 
-; (sb/spin-component-with-data js/document "whatever" some-data)
-(sb/spin-components js/document)
+; (sb/spin-by-id js/document "whatever" some-data)
+(sb/spin-by-data-sw-source js/document)
