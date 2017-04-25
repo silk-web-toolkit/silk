@@ -5,12 +5,14 @@
             [com.rpl.specter :as spec]
             [silk.core.common.walk :as sw]
             [silk.core.input.env :as se]
-            [silk.core.transform.path :as sp])
+            [silk.core.transform.path :as sp]
+            [markdown.core :as md])
      :cljs (:require [clojure.string :refer [split]]
                      [com.rpl.specter :as spec]
                      [hickory.core :as h]
                      [com.rpl.specter :as spec]
-                     [silk.core.common.walk :as sw])))
+                     [silk.core.common.walk :as sw]
+                     [markdown.core :as md])))
 
 (defn repeating-tag? [hick] (some #(= (:tag hick) %) [:ul :ol :tbody]))
 
@@ -29,9 +31,13 @@
   [hick project d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
     (let [t (get-data project d v)
-          c (if (.endsWith v "-html") (h/as-hickory (h/parse (java.net.URLDecoder/decode t))) t)]
+          f (cond
+              (.endsWith v "-html") (java.net.URLDecoder/decode t)
+              (.endsWith v "-md")   (md/md-to-html-string t)
+              :else                 t)
+          c (mapv h/as-hickory (h/parse-fragment f))]
       (-> hick
-          (assoc :content [c])
+          (assoc :content (or (not-empty c) [""]))
           (update-in [:attrs] dissoc :data-sw-text)))
     hick))
 

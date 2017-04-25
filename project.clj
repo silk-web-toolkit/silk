@@ -1,4 +1,4 @@
-(defproject org.silkyweb/silk "0.9.0"
+(defproject org.silkyweb/silk "0.10.0"
   :description "Silk static and dynamic publishing toolkit."
   :source-paths ["src-clj" "src-cljc"]
   :min-lein-version "2.0.0"
@@ -15,7 +15,8 @@
                  [hawk "0.2.11"]
                  [io.aviso/pretty "0.1.33"]
                  [org.apache.commons/commons-lang3 "3.5"]
-                 [org.clojure/data.json "0.2.6"]]
+                 [org.clojure/data.json "0.2.6"]
+                 [markdown-clj "0.9.99"]]
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-expectations "0.0.8"]]
   :cljsbuild {
