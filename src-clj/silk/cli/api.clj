@@ -45,10 +45,10 @@
   [project live? trace?]
   (single-spin project live? trace?)
   (println "Watching for changes. Press enter to exit")
-  (let [sp  (.getAbsolutePath (clojure.java.io/file (se/site-path project)))
+  (let [sp  (.getCanonicalPath (clojure.java.io/file (se/site-path project)))
         flt (fn [_ {:keys [file]}]
-              (not (or (= (.getAbsolutePath file) project)
-                       (.startsWith (.getAbsolutePath file) sp)
+              (not (or (= (.getCanonicalPath file) project)
+                       (.startsWith (.getCanonicalPath file) sp)
                        (.isDirectory file)
                        (.isHidden file))))
         hnd (fn [ctx {file :file kind :kind}]
