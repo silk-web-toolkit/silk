@@ -4,11 +4,9 @@
             [silk.core.input.file :as sf]
             [silk.core.transform.path :as sp]
             [silk.core.transform.pipeline :as pipes]
-            ; [watchtower.core :as watch]
             [hawk.core :as hawk]
             [silk.cli.io :as io])
   (:use [clojure.string :only [split]])
-  (import java.io.File)
   (:gen-class))
 
 ;; =============================================================================
@@ -45,18 +43,22 @@
   [project live? trace?]
   (single-spin project live? trace?)
   (println "Watching for changes. Press enter to exit")
-  (let [sp  (.getCanonicalPath (clojure.java.io/file (se/site-path project)))
-        flt (fn [_ {:keys [file]}]
-              (not (or (= (.getCanonicalPath file) project)
-                       (.startsWith (.getCanonicalPath file) sp)
-                       (.isDirectory file)
-                       (.isHidden file))))
+  (let [paths [se/components-path ;; GLOBAL
+               se/data-path ;; GLOBAL
+               (str project (do/fs) "components" (do/fs))
+               (se/project-data-path project)
+               (se/meta-path project)
+               (se/resource-path project)
+               (se/project-templates-path project)
+               (se/views-path project)]
         hnd (fn [ctx {file :file kind :kind}]
               (println (name kind) (sp/relativise-> project file))
               (single-spin project live? trace?)
               (println "Watching for changes. Press enter to exit")
-              ctx)
-        wt (hawk/watch! [{:paths [project] :filter flt :handler hnd}])]
+              ctx)]
+    (hawk/watch! [{:paths (filter #(.exists (clojure.java.io/file %)) paths)
+                   :filter hawk/file?
+                   :handler hnd}])
     (loop [input (read-line)]
       (when-not (= "\n" input)
         (System/exit 0)
