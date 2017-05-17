@@ -1,5 +1,7 @@
 # SILK WEB TOOLKIT
 
+[![Clojars Project](https://img.shields.io/clojars/v/org.silkyweb/silk.svg)](https://clojars.org/org.silkyweb/silk)
+
 ## About
 
 A compile time web publishing toolkit created at [bheap ltd](http://www.bheap.co.uk/) and improved by the [community](http://www.silkyweb.org/community.html).
