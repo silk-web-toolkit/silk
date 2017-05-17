@@ -27,6 +27,20 @@
       r))
     #?(:cljs r)))
 
+(defn inject-when
+  [hick project d]
+  (let [attrs (:attrs hick)
+        handler (fn [key]
+                  (let [v (get-in hick [:attrs key])]
+                    (if (or (and (= key :data-sw-when) (empty? (get-data project d v)))
+                            (and (= key :data-sw-when-not) (not (empty? (get-data project d v)))))
+                      {:type :comment}
+                      (update-in hick [:attrs] dissoc key))))]
+    (cond
+      (contains? attrs :data-sw-when)     (handler :data-sw-when)
+      (contains? attrs :data-sw-when-not) (handler :data-sw-when-not)
+      :else                               hick)))
+
 (defn inject-text
   [hick project d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
@@ -86,17 +100,18 @@
   [project hick data ks]
   (sw/map-content hick (fn [h]
     (cond
-      (= hick h)          h
-      (repeating-tag? h)  (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
-                                d (get-in data k)]
-                            (cond
-                              (= (count d) 0) (assoc h :content [""])
-                              (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in project h data (conj k i)))) d)))
-                              :else            h))
-      :else               (let [dl-data (flatten-in data ks)]
-                            (-> h
-                                (inject-text project dl-data)
-                                (inject-attr project dl-data)))))))
+      (= hick h)         h
+      (repeating-tag? h) (let [k (if-let [dl (data-level h)] (conj ks (last dl)) ks)
+                               d (get-in data k)]
+                           (cond
+                             (= (count d) 0) (assoc h :content [""])
+                             (not (= k ks))  (assoc h :content (flatten (map-indexed (fn [i _] (:content (inject-in project h data (conj k i)))) d)))
+                             :else           h))
+      :else              (let [dl-data (flatten-in data ks)]
+                           (-> h
+                               (inject-when project dl-data)
+                               (inject-text project dl-data)
+                               (inject-attr project dl-data)))))))
 
 (defn sort-it
   "Default to descending sort"
