@@ -45,11 +45,10 @@
   [hick project d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
     (let [t (get-data project d v)
-          f (cond
-              (.endsWith v "-html") (java.net.URLDecoder/decode t)
-              (.endsWith v "-md")   (md/md-to-html-string t)
-              :else                 t)
-          c (mapv h/as-hickory (h/parse-fragment f))]
+          c (cond
+              (.endsWith v "-html") (mapv h/as-hickory (h/parse-fragment (java.net.URLDecoder/decode t)))
+              (.endsWith v "-md")   (mapv h/as-hickory (h/parse-fragment (md/md-to-html-string t)))
+              :else                 [t])]
       (-> hick
           (assoc :content (or (not-empty c) [""]))
           (update-in [:attrs] dissoc :data-sw-text)))
