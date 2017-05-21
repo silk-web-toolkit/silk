@@ -21,7 +21,7 @@
 (defn get-data
   [project d v]
   (let [ks (map keyword (split v #"\."))
-        r  (str (get-in d ks))]
+        r  (get-in d ks)]
     #?(:clj (if (= (last ks) :sw/path)
       (sp/update-extension (sp/relativise-> (se/project-data-path project) r) "html")
       r))
@@ -44,7 +44,7 @@
 (defn inject-text
   [hick project d]
   (if-let [v (get-in hick [:attrs :data-sw-text])]
-    (let [t (get-data project d v)
+    (let [t (str (get-data project d v))
           c (cond
               (.endsWith v "-html") (mapv h/as-hickory (h/parse-fragment (java.net.URLDecoder/decode t)))
               (.endsWith v "-md")   (mapv h/as-hickory (h/parse-fragment (md/md-to-html-string t)))
@@ -58,7 +58,7 @@
   [hick project d]
   (let [attrs (:attrs hick)
         s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
-        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (get-data project d v)}))]
+        n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (str (get-data project d v))}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)
        (update-in [:attrs] #(apply dissoc %1 %2) (keys s-attrs)))))
