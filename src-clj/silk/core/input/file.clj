@@ -38,7 +38,7 @@
 
 (defn- file-tree [#^File f]
  (if (.isDirectory f)
-   (merge (file-2-map f) {:sw/contents (vec (map file-tree (edn-files (.listFiles f) true)))})
+   (merge (file-2-map f) {:sw/contents (mapv file-tree (edn-files (.listFiles f) true))})
    (merge (file-2-map f) (edn/read-string (slurp f)))))
 
 ;; =============================================================================

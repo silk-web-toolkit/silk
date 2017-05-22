@@ -1,6 +1,5 @@
 (ns silk.core.common.core
   #?(:clj (:require [clojure.string :refer [split]]
-            [com.rpl.specter :as spec]
             [hickory.core :as h]
             [com.rpl.specter :as spec]
             [silk.core.common.walk :as sw]
@@ -10,7 +9,6 @@
      :cljs (:require [clojure.string :refer [split]]
                      [com.rpl.specter :as spec]
                      [hickory.core :as h]
-                     [com.rpl.specter :as spec]
                      [silk.core.common.walk :as sw]
                      [markdown.core :as md])))
 
@@ -23,8 +21,8 @@
   (let [ks (map keyword (split v #"\."))
         r  (get-in d ks)]
     #?(:clj (if (= (last ks) :sw/path)
-      (sp/update-extension (sp/relativise-> (se/project-data-path project) r) "html")
-      r))
+               (sp/update-extension (sp/relativise-> (se/project-data-path project) r) "html")
+              r))
     #?(:cljs r)))
 
 (defn inject-when
@@ -80,20 +78,21 @@
 (defn flatten-in
   [data keys]
   (loop [d data ks keys d2 data ks2 [(first keys)]]
-    (cond
-      (number? (first ks))  (recur
-                              (if (= (count ks2) 1)
-                                (nth d2 (first ks2))
-                                (assoc-in d (drop-last ks2) (get d2 (first ks))))
-                              (next ks)
-                              (nth d2 (first ks))
-                              (conj (remove-item ks2 (first ks)) (fnext ks)))
-      (keyword? (first ks)) (recur
-                              (assoc-in d ks2 (get d2 (first ks)))
-                              (next ks)
-                              (get d2 (first ks))
-                              (conj ks2 (fnext ks)))
-      :else                 d)))
+    (let [k (first ks)]
+      (cond
+        (number? k)  (recur
+                       (if (= (count ks2) 1)
+                         (nth d2 (first ks2))
+                         (assoc-in d (drop-last ks2) (get d2 k)))
+                       (next ks)
+                       (nth d2 k)
+                       (conj (remove-item ks2 k) (fnext ks)))
+        (keyword? k) (recur
+                       (assoc-in d ks2  (get d2 k))
+                       (next ks)
+                       (get d2 k)
+                       (conj ks2 (fnext ks)))
+        :else        d))))
 
 (defn inject-in
   [project hick data ks]
@@ -111,6 +110,13 @@
                                (inject-when project dl-data)
                                (inject-text project dl-data)
                                (inject-attr project dl-data)))))))
+
+(defn vec-it
+  [m]
+  (cond
+    (map? m)                      (into {} (for [[k v] m] {k (vec-it v)}))
+    (or (sequential? m) (set? m)) (mapv vec-it m)
+    :else                         m))
 
 (defn sort-it
   "Default to descending sort"
@@ -136,8 +142,8 @@
       (= (count data) 0) (assoc h :content [""])
       :else              (let [s-data (sort-it data sort direc)
                                l-data (if limit
-                                        (vec (take (Integer. (re-find  #"\d+" limit)) s-data))
-                                        (vec s-data))]
+                                        (vec-it (take (Integer. (re-find  #"\d+" limit)) s-data))
+                                        (vec-it s-data))]
                            (spec/transform
                              (spec/walker #(repeating-tag? %))
                              #(assoc % :content (flatten (map-indexed (fn [i _] (:content (inject-in project % l-data [i]))) l-data)))
