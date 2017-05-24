@@ -26,9 +26,10 @@ For formatting we prefer two space indentation, this seems to work well for HTML
 
 To get started with contributing just come and ask about it on the [mailing list](http://groups.google.com/group/silk-user) and view our [issues list](https://github.com/organizations/silk-web-toolkit/dashboard/issues).
 
-Silk is a Clojure and ClojureScript project. To build compile and build an executable jar run `lein uberjar`.
+Silk is a Clojure and ClojureScript project. 
 
-To test your local changes with your silk project run `lein run spin -d ~/path/to/project`.
+- To build compile and build an executable jar run `lein uberjar`.
+- To test your local changes with your silk project run `lein run spin -d ~/path/to/project`.
 
 Before making a pull request please clone [silk-test-site](https://github.com/silk-web-toolkit/silk-test-site) and run your changes against this site. Once spun view the output to help ensure that your changes have not introduced unwanted side effects.
 
