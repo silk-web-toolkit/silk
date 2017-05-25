@@ -2,12 +2,11 @@
   (:require [silk.core.input.env :as se]
             [silk.core.input.file :as sf]
             [silk.core.transform.pipeline :as pipes]
-            [clojure.java.io :refer [file]]
+            [clojure.java.io :as io]
             [clojure.data.json :as json]
             [io.aviso.ansi :as aa]
             [io.aviso.exception :as ae]
-            [me.rossputin.diskops :as do])
-  (import java.io.File))
+            [me.rossputin.diskops :as do]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -18,7 +17,7 @@
     (accept [_ d name] (not (nil? (re-find r name))))))
 
 (defn- is-detail? [d r]
-  (let [files (.list (file d) (filter-file r))]
+  (let [files (.list (io/file d) (filter-file r))]
     (if (seq files) true false)))
 
 ; TODO: TBD
@@ -41,8 +40,8 @@
   (let [s (se/site-path project) r (se/resource-path project) m (se/meta-path project)]
     (when (do/exists-dir? s) (do/delete-directory s))
     (when (do/exists-dir? se/sw-path) (do/delete-directory se/sw-path))
-    (.mkdir (File. s))
-    (.mkdir (File. se/sw-path))
+    (.mkdir (io/file s))
+    (.mkdir (io/file se/sw-path))
     (when (do/exists-dir? r) (do/copy-recursive r s))
     (when (do/exists-dir? m) (do/copy-file-children m s))))
 
@@ -59,7 +58,7 @@
     (do
       (println
         (aa/bold-red "WARNING: Creating missing shared directory"))
-        (.mkdirs (File. se/silk-home)))))
+        (.mkdirs (io/file se/silk-home)))))
 
 (defn check-silk-project-structure
   [project]
@@ -86,8 +85,8 @@
 (defn create-view-driven-pages
   [project vdp]
   (doseq [t vdp]
-    (let [parent (.getParent (File. (:path t)))]
-      (when parent (.mkdirs (File. (se/site-path project) parent)))
+    (let [parent (.getParent (io/file (:path t)))]
+      (when parent (.mkdirs (io/file (se/site-path project) parent)))
       (spit (str (se/site-path project) (:path t)) (:content t)))))
 
 (defn get-data-driven-pipeline
@@ -96,9 +95,9 @@
     (flatten
       (for [path (sf/get-data-directories project)]
         (if (is-detail? path #".edn")
-          (let [f (file path)
-                tpl (file (str (se/project-details-path project) (.getName f) ".html"))]
-            (when (.exists (file tpl))
+          (let [f (io/file path)
+                tpl (io/file (str (se/project-details-path project) (.getName f) ".html"))]
+            (when (.exists (io/file tpl))
               (-> (pipes/data-detail-pipeline-> project (.listFiles f) tpl)
                   (pipes/gen-nav-data-pipeline->)
                   (pipes/inject-data-pipeline-> project)
@@ -108,10 +107,10 @@
 (defn create-data-driven-pages
   [project ddp]
   (doseq [d ddp]
-    (let [parent (.getParent (new File (:path d)))
+    (let [parent (.getParent (io/file (:path d)))
           raw (str (se/site-path project) (:path d))
           save-path (str (subs raw 0 (.lastIndexOf raw ".")) ".html")]
-      (when parent (.mkdirs (File. (se/site-path project) parent)))
+      (when parent (.mkdirs (io/file (se/site-path project) parent)))
       (spit save-path (:content d)))))
 
 ;; TODO config file?
@@ -120,7 +119,7 @@
   (if (not (nil? tp))
     (let [path (str (se/site-path project) "resource" (do/fs) "js" (do/fs))
           file (str path "tipuesearch_content.js")]
-      (.mkdirs (File. path))
+      (.mkdirs (io/file path))
       (spit file (str
         "var tipuesearch=" (json/write-str tp)
         ";var tipuedrop=tipuesearch;"
@@ -134,9 +133,12 @@
   (let [f se/spun-projects-file]
     (if (not (.exists f)) (.createNewFile f))
     (let [path (.getPath f)
-          millis (.getTime (new java.util.Date))
+          project-path (.getCanonicalPath (io/file project))
+          sdf (doto (java.text.SimpleDateFormat. "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                    (.setTimeZone (java.util.TimeZone/getTimeZone "UTC")))
+          now (.format sdf (java.util.Date.))
           old (with-open [rdr (clojure.java.io/reader path)] (doall (line-seq rdr)))
-          removed (remove #(.contains % (str project ",")) old)
+          removed (remove #(.contains % (str project-path ",")) old)
           formatted (apply str (map #(str % "\n") removed))
-          updated (conj [(str project "," millis "\n")]  formatted)]
+          updated (conj [(str project-path "," now "\n")]  formatted)]
       (spit path (apply str updated)))))

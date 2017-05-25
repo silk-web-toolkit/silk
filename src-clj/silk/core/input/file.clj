@@ -5,7 +5,7 @@
             [hickory.core :as h]
             [me.rossputin.diskops :as do]
             [silk.core.input.env :as se])
-  (import java.io.File))
+  (:import java.io.File))
 
 ;; =============================================================================
 ;; Helper functions

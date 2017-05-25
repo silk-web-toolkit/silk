@@ -2,10 +2,10 @@
   "Artifact element transformation, for example attribute rewriting for
    page elements.  Initially mimetype for content is HTML5.  Principally
    we are working with a view driven pipeline."
-  (:require [silk.core.input.env :as se]
+  (:require [clojure.java.io :as io]
+            [silk.core.input.env :as se]
             [silk.core.transform.path :as sp]
-            [silk.core.common.walk :as sw])
-  (import java.io.File))
+            [silk.core.common.walk :as sw]))
 
 ;; =============================================================================
 ;; Helper functions
@@ -29,10 +29,10 @@
    within a project (view location).
    Mode enables different behaviour across different intended environments."
   [project v p live?]
-  (let [vp (.getParent (File. p))]
+  (let [vp (.getParent (io/file p))]
     (if vp
       (if (valid-asset? v)
-        (let [rel (sp/relativise-> (.getParent (File. (se/views-path project) p))
+        (let [rel (sp/relativise-> (.getParent (io/file (se/views-path project) p))
                                    (se/views-path project))]
           (str rel "/" v))
         v)

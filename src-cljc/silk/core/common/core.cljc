@@ -44,7 +44,7 @@
   (if-let [v (get-in hick [:attrs :data-sw-text])]
     (let [t (str (get-data project d v))
           c (cond
-              (.endsWith v "-html") (mapv h/as-hickory (h/parse-fragment (java.net.URLDecoder/decode t)))
+              (.endsWith v "-html") (mapv h/as-hickory (h/parse-fragment (java.net.URLDecoder/decode t "UTF-8")))
               (.endsWith v "-md")   (mapv h/as-hickory (h/parse-fragment (md/md-to-html-string t)))
               :else                 [t])]
       (-> hick

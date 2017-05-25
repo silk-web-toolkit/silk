@@ -18,7 +18,7 @@
     "SILK_PATH"
     (str user-home (do/fs) ".silk")))
 
-(defonce spun-projects-file (file (str silk-home (do/fs) "spun-projects.txt")))
+(defonce spun-projects-file (file (str silk-home (do/fs) "spun-projects.csv")))
 
 ;; used by quantum-resource in static spins to get component and fallback
 ;; local/env var/shared

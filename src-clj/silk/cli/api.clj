@@ -67,14 +67,13 @@
 (defn- sites
   []
   (io/check-silk-configuration)
-  (println "Your Silk sites are : ")
+  (println "Silk Sites\nLast Spun      Path")
   (with-open [rdr (clojure.java.io/reader se/spun-projects-file)]
     (doseq [line (line-seq rdr)]
-      (let [splitStr (split line #",")
-            path (first splitStr)
-            date (new java.util.Date (read-string (second splitStr)))
+      (let [[path date-raw] (split line #",")
+            date (clojure.instant/read-instant-date date-raw)
             date-str (.format (new java.text.SimpleDateFormat) date)]
-        (println  "Last spun:" date-str path)))))
+        (println  date-str path)))))
 
 (defn- project-path
   [d]

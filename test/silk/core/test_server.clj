@@ -1,6 +1,5 @@
 (ns silk.core.test-server
-  (:require [hickory.core :refer :all]
-            [silk.core.server :as sv]
+  (:require [silk.core.server :as sv]
             [expectations :refer :all]))
 
 (def some-data [{:title "A test title"}])
