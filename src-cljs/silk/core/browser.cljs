@@ -1,7 +1,6 @@
 (ns silk.core.browser
   (:require-macros [cljs.core.async.macros :refer [go]])
-  (:require [com.rpl.specter :as spec]
-            [hickory.core :as h]
+  (:require [hickory.core :as h]
             [hickory.render :as hr]
             [hickory.select :as hs]
             [silk.core.common.core :as cr]
@@ -30,12 +29,17 @@
 
 (defn ^:export spin-by-data-sw-source
   "Splices markup restricted by data-sw-source, data is provided by data-sw-source attribute value"
-  [markup]
-  (doseq [el (elementsWithAttribute markup :data-sw-source)]
-    (go
-      (let [hick (hickorify el)
-            path (get-in hick [:attrs :data-sw-source])
-            rsp  (<! (http/get path))
-            data (r/read-string (:body rsp))
-            res  (cr/splice-hick-with-data hick data)]
-        (set! (.-outerHTML el) (hr/hickory-to-html res))))))
+  ([markup] (spin-by-data-sw-source markup #(do)))
+  ([markup f]
+    (let [elements (elementsWithAttribute markup :data-sw-source)
+          last-idx (- (count elements) 1)]
+      (doall (map-indexed (fn [idx el]
+                            (go
+                              (let [hick (hickorify el)
+                                    path (get-in hick [:attrs :data-sw-source])
+                                    rsp  (<! (http/get path))
+                                    data (r/read-string (:body rsp))
+                                    res  (cr/splice-hick-with-data hick data)]
+                                (set! (.-outerHTML el) (hr/hickory-to-html res))
+                                (when (= idx last-idx) (f)))))
+                          elements)))))
