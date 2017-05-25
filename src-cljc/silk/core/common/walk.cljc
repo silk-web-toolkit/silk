@@ -32,15 +32,15 @@
                    (concat (next h) n)
                    (concat (for [i (next h)] hl) nl)
                    (update-hick r-hick hl (assoc changed-hick :content [])))
-           (recur (next h)
-                  hl
-                  n
-                  nl
-                  (update-hick r-hick hl changed-hick))))
-          (if n
-            (recur (flatten (vector (first n)))
-                   (flatten (vector (first nl)))
-                   (next n)
-                   (next nl)
-                   r-hick)
-            r-hick)))))
+            (recur (next h)
+                   hl
+                   n
+                   nl
+                   (update-hick r-hick hl changed-hick))))
+        (if n
+          (recur (flatten (vector (first n)))
+                 (flatten (vector (first nl)))
+                 (next n)
+                 (next nl)
+                 r-hick)
+          r-hick)))))
