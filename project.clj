@@ -20,9 +20,9 @@
             [lein-expectations "0.0.8"]]
   :cljsbuild {
     :builds [{:source-paths ["src-cljs"]
-              :compiler {:output-to "resources/public/js/main.js"
+              :compiler {:output-to "resources/public/js/browser.js"
                          :output-dir "resources/public/js"
                          :optimizations :simple
-                         :source-map "resources/public/js/main.js.map"}}]}
+                         :source-map "resources/public/js/browser.js.map"}}]}
   :aot :all
   :main silk.cli.main)

@@ -1,6 +1,12 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <script type="text/javascript" src="browser.js"></script>
+    <style>
+      ul, ol {
+        list-style-type: none;
+      }
+    </style>
   </head>
   <body>
     <p>Tests various components and shows the expected output</p>
@@ -12,31 +18,31 @@
         <tr valign="top">
           <td>
             <h2>list none nested data</h2>
-            <ul data-sw-source="items.edn">
+            <ul id="output1" data-sw-source="items.edn">
               <li data-sw-text="title"></li>
             </ul>
             <h2>list nested data</h2>
-            <ul data-sw-source="items.edn">
+            <ul id="output2" data-sw-source="items.edn">
               <li>
-                <h3 data-sw-text="title">placeholder for title</h3>
-                <p data-sw-text="description">placeholder for description</p>
+                <h3 data-sw-text="title"></h3>
+                <p data-sw-text="description"></p>
                 <ol>
                   <li>
-                    <a data-sw-text="links.title" data-sw-href="links.href" href="#">placeholder for link</a>
+                    <a data-sw-text="links.title" data-sw-href="links.href" href="#"></a>
                     <ul>
                       <li>
-                        <span data-sw-text="links.title">placeholder for title</span> -
-                        <span data-sw-text="links.contents.description">placeholder for description</span>
+                        <span data-sw-text="links.title"></span>
+                        <span data-sw-text="links.contents.description"></span>
                         <ul>
                           <li>
-                            <span data-sw-text="links.contents.subs.node">placeholder for node</span>
+                            <span data-sw-text="links.contents.subs.node"></span>
                           </li>
                         </ul>
                       </li>
                     </ul>
                     <ol>
                       <li>
-                        <span data-sw-text="links.same-levels.description">placeholder for descripton</span>
+                        <span data-sw-text="links.same-levels.description"></span>
                       </li>
                     </ol>
                   </li>
@@ -114,7 +120,10 @@
             </ul>
           </td>
         </tr>
-      </table>
+      </tbody>
+    </table>
+    <script>
+      silk.core.browser.spin_by_data_sw_source(document);
+    </script>
   </body>
-  <script type="text/javascript" src="main.js"></script>
 </html>

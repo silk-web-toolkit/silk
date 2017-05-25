@@ -20,7 +20,7 @@
   [markup k]
   (filter #(.getAttribute % (name k)) (cr/as-seq (elements markup))))
 
-(defn spin-by-id
+(defn ^:export spin-by-id
   "Splices markup restricted by given id and data"
   [markup id data]
   (let [template (elementById markup id)
@@ -28,7 +28,7 @@
         res (cr/splice-hick-with-data hick data)]
     (set! (.-outerHTML template) (hr/hickory-to-html res))))
 
-(defn spin-by-data-sw-source
+(defn ^:export spin-by-data-sw-source
   "Splices markup restricted by data-sw-source, data is provided by data-sw-source attribute value"
   [markup]
   (doseq [el (elementsWithAttribute markup :data-sw-source)]
