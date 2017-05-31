@@ -9,7 +9,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- silk-text-node
+(defn- silk-text-nodes
   [html]
   (spec/select
     (spec/walker #(get-in % [:attrs :data-sw-content]))
@@ -53,14 +53,12 @@
 (defn get-text->
   "Gets the sites contents."
   [items]
-  (let [f (filter #(not-empty (silk-text-node (:content %))) (distinct items))]
-    (if (.isEmpty f)
-      nil
-      {:pages
-        (flatten
-          (for [{:keys [nav path content]} f]
-            (for [node (silk-text-node content)]
-              { :title (get-title nav path node)
-                :text (escaped (condensed (text node)))
-                :tags ""
-                :loc (get-location path node)})))})))
+  (when-let [f (seq (filter #(not-empty (silk-text-nodes (:content %))) items))]
+    {:pages
+      (flatten
+        (for [{:keys [nav path content]} f]
+          (for [node (silk-text-nodes content)]
+            {:title (get-title nav path node)
+             :text (escaped (condensed (text node)))
+             :tags ""
+             :loc (get-location path node)})))}))
