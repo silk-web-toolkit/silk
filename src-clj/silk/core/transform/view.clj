@@ -41,7 +41,7 @@
   [project v]
   (let [vhick (sf/hick-file v)
         vtitle (-> (hs/select (hs/tag :title) vhick) first :content)
-        bhick (hs/select (hs/child (hs/tag :body) hs/any) vhick)
+        bhick (-> (hs/select (hs/tag :body) vhick) first :content)
         vbody-attrs (-> (hs/select (hs/tag :body) vhick) first :attrs)
         meta (meta-map vhick)
         name (.getName v)]
