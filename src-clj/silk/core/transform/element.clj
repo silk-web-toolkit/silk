@@ -24,21 +24,18 @@
         (= (.lastIndexOf asset ".") -1))
       (not (has-prefix? asset prefixes)))))
 
-(defn- relativise-attr
-  "Relativise an attribute value v using the source of the attributes location
+(defn- relativise
+  "Relativise a value v using the source of the attributes location
    within a project (view location).
    Mode enables different behaviour across different intended environments."
-  [project v p live?]
-  (let [vp (.getParent (io/file p))]
-    (if vp
-      (if (valid-asset? v)
-        (let [rel (sp/relativise-> (.getParent (io/file (se/views-path project) p))
-                                   (se/views-path project))]
-          (str rel "/" v))
-        v)
-      (if live?
-        (if (valid-asset? v) (str "/" v) v)
-        v))))
+  [project v f vf live?]
+  (if (.getParent f)
+    (if (valid-asset? v)
+      (str (sp/relativise-> (.getParent vf) (se/views-path project)) "/" v)
+      v)
+    (if live?
+      (if (valid-asset? v) (str "/" v) v)
+      v)))
 
 ;; =============================================================================
 ;; Element transformation functions, see namespace comment
@@ -50,10 +47,14 @@
    Payload is a map constructed with :path and :content keys where path
    points to content.
    Mode enables different behaviour across different intended environments."
-  [project tag attr payload live?]
-  (assoc payload :content (sw/map-content (:content payload)
-    (fn
-      [h]
-      (if-let [v (and (= (:tag h) tag) (get-in h [:attrs attr]))]
-        (assoc-in h [:attrs attr] (relativise-attr project v (:path payload) live?))
-        h)))))
+  [project tags payload live?]
+  (let [hick (:content payload)
+        f  (io/file (:path payload))
+        vf (io/file (se/views-path project) f)
+        mc (sw/map-content hick
+             (fn [h]
+               (let [attr (get tags (:tag h))]
+                 (if-let [v (get-in h [:attrs attr])]
+                   (assoc-in h [:attrs attr] (relativise project v f vf live?))
+                   h))))]
+    (assoc payload :content mc)))

@@ -44,13 +44,10 @@
   "Relativisation of uri's allows different behaviours across different
    intended environments & converts Hickory into HTML"
   [payload project live?]
-  (->> payload
-       (map #(sel/relativise-attrs project :link :href % live?))
-       (map #(sel/relativise-attrs project :img :src % live?))
-       (map #(sel/relativise-attrs project :script :src % live?))
-       (map #(sel/relativise-attrs project :a :href % live?))
-       (map #(sel/relativise-attrs project :form :action % live?))
-       (map #(assoc % :content (hr/hickory-to-html (:content %))))))
+  (let [tags {:link :href, :img :src, :script :src, :a :href, :form :action}]
+    (->> payload
+         (map #(sel/relativise-attrs project tags % live?))
+         (map #(assoc % :content (hr/hickory-to-html (:content %)))))))
 
 (defn text-pipeline->
   "Gets the text content from each view"
