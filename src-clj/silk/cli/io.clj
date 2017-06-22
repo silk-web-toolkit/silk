@@ -37,7 +37,9 @@
 
 (defn side-effecting-spin-io
   [project]
-  (let [s (se/site-path project) r (se/resource-path project) m (se/meta-path project)]
+  (let [s (se/site-path project)
+        r (se/resource-path project)
+        m (se/meta-path project)]
     (when (do/exists-dir? s) (do/delete-directory s))
     (when (do/exists-dir? se/sw-path) (do/delete-directory se/sw-path))
     (.mkdir (io/file s))
