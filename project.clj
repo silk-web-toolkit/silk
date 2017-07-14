@@ -4,7 +4,7 @@
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.9.521"]
-                 [cljs-http "0.1.42"]
+                 [cljs-http "0.1.43"]
                  [pathetic "0.5.1"]
                  [hickory "0.7.1"]
                  [expectations "2.1.1"]
@@ -12,11 +12,11 @@
                  [me.rossputin/diskops "0.6.0"]
                  [org.clojure/tools.cli "0.3.5"]
                  [hawk "0.2.11"]
-                 [io.aviso/pretty "0.1.33"]
+                 [io.aviso/pretty "0.1.34"]
                  [org.apache.commons/commons-lang3 "3.5"]
                  [org.clojure/data.json "0.2.6"]
                  [markdown-clj "0.9.99"]]
-  :plugins [[lein-cljsbuild "1.1.5"]
+  :plugins [[lein-cljsbuild "1.1.6"]
             [lein-expectations "0.0.8"]]
   :cljsbuild {
     :builds [{:source-paths ["src-cljs"]
