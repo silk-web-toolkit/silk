@@ -77,15 +77,11 @@
 
 (defn -main [& args]
   (let [{:keys [options arguments errors summary]} (parse-opts args cli-options)
-        cmd (first arguments)
-        auto? (:auto options)
-        directory (:directory options)
-        live? (:live options)
-        trace? (:trace options)
-        help? (:help options)
-        version? (:version options)]
+        {:keys [auto directory live trace]} options
+        cmd (first arguments)]
     (handle-errors options arguments errors summary)
     (cond
-      (= cmd i/sites) (api/sites-handled)
-      (= cmd i/spin)  (api/spin-or-reload auto? directory live? trace?)
-      :else (exit 1 (usage-exit summary)))))
+      (= cmd i/sites)           (api/print-sites trace)
+      (and (= cmd i/spin) auto) (api/auto-spin directory live trace)
+      (= cmd i/spin)            (api/spin directory live trace)
+      :else                     (exit 1 (usage-exit summary)))))

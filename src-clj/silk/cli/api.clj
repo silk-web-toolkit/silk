@@ -13,7 +13,7 @@
 ;; Helper functions
 ;; =============================================================================
 
-(defn- spin
+(defn- silk-spin
   [project live?]
   (io/display-spin-start)
   (io/check-silk-configuration)
@@ -31,40 +31,7 @@
   (io/store-project-dir project)
   (io/display-spin-end))
 
-(defn- single-spin
-  [project live? trace?]
-  (let [spin-handled (io/handler spin io/handle-silk-project-exception)
-        spin-traced  (io/handler spin io/trace-silk-project-exception)]
-    (if trace?
-      (spin-traced  project live?)
-      (spin-handled project live?))))
-
-(defn- reload-spin
-  [project live? trace?]
-  (single-spin project live? trace?)
-  (println "Watching for changes. Press enter to exit")
-  (let [paths [se/components-path ;; GLOBAL
-               se/data-path ;; GLOBAL
-               (str project (do/fs) "components" (do/fs))
-               (se/project-data-path project)
-               (se/meta-path project)
-               (se/resource-path project)
-               (se/project-templates-path project)
-               (se/views-path project)]
-        hnd (fn [ctx {file :file kind :kind}]
-              (println (name kind) (sp/relativise-> project file))
-              (single-spin project live? trace?)
-              (println "Watching for changes. Press enter to exit")
-              ctx)]
-    (hawk/watch! [{:paths (filter #(.exists (clojure.java.io/file %)) paths)
-                   :filter hawk/file?
-                   :handler hnd}])
-    (loop [input (read-line)]
-      (when-not (= "\n" input)
-        (System/exit 0)
-        (recur (read-line))))))
-
-(defn- sites
+(defn- silk-sites
   []
   (io/check-silk-configuration)
   (println "Silk Sites\nLast Spun      Path")
@@ -88,10 +55,40 @@
 ;; Public API
 ;; =============================================================================
 
-(def sites-handled (io/handler sites io/handle-silk-project-exception))
+(defn print-sites
+  ([] (print-sites false))
+  ([trace?] (apply (io/handler silk-sites trace?) [])))
 
-(defn spin-or-reload
-  [reload? directory live? trace?]
-  (if reload?
-    (reload-spin (project-path directory) live? trace?)
-    (single-spin (project-path directory) live? trace?)))
+(defn spin
+  ([dir] (spin dir false false))
+  ([dir live?] (spin dir live? false))
+  ([dir live? trace?]
+    (apply (io/handler silk-spin trace?) [(project-path dir) live?])))
+
+(defn auto-spin
+  ([dir] (auto-spin dir false false))
+  ([dir live?] (auto-spin dir live? false))
+  ([dir live? trace?]
+    (spin dir live? trace?)
+    (println "Watching for changes. Press enter to exit")
+    (let [project (project-path dir)
+          paths [se/components-path ;; GLOBAL
+                 se/data-path ;; GLOBAL
+                 (str project (do/fs) "components" (do/fs))
+                 (se/project-data-path project)
+                 (se/meta-path project)
+                 (se/resource-path project)
+                 (se/project-templates-path project)
+                 (se/views-path project)]
+          hnd (fn [ctx {file :file kind :kind}]
+                (println (name kind) (sp/relativise-> project file))
+                (spin dir live? trace?)
+                (println "Watching for changes. Press enter to exit")
+                ctx)]
+      (hawk/watch! [{:paths (filter #(.exists (clojure.java.io/file %)) paths)
+                     :filter hawk/file?
+                     :handler hnd}])
+      (loop [input (read-line)]
+        (when-not (= "\n" input)
+          (System/exit 0)
+          (recur (read-line)))))))

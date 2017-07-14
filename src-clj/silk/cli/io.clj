@@ -68,10 +68,7 @@
     (do
       (throw (IllegalArgumentException. "Not a Silk project, a directory may be missing - template or view ?")))))
 
-(defn handler [f & handlers]
-  (reduce (fn [handled h] (partial h handled)) f (reverse handlers)))
-
-(defn handle-silk-project-exception [f & args]
+(defn handle-exception [f & args]
   (try
     (apply f args)
     (catch IllegalArgumentException iex
@@ -81,8 +78,11 @@
       (println (str (aa/bold-red "ERROR: ") (aa/italic "Sorry, there was a problem, either a component or datasource is missing or this is not a Silk project ?")))
       (println (str (aa/bold-red "CAUSE: ") (aa/italic (.getMessage ex)))))))
 
-(defn trace-silk-project-exception [f & args]
+(defn trace-exception [f & args]
   (try (apply f args) (catch Exception iex (ae/write-exception iex))))
+
+(defn handler [f trace?]
+  (partial (if trace? trace-exception handle-exception) f))
 
 (defn create-view-driven-pages
   [project vdp]
