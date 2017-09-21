@@ -16,6 +16,13 @@
 
 (defn silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
+(defn- rich-empty? [v]
+  (defn boolean? [x] (instance? Boolean x)) ;; TODO remove in 1.9
+  (cond
+    (boolean? v) (not v)
+    (number? v)  false
+    :else        (empty? v)))
+
 (defn get-data
   [project d v]
   (let [ks (map keyword (split v #"\."))
@@ -29,9 +36,10 @@
   [hick project d]
   (let [attrs (:attrs hick)
         handler (fn [key]
-                  (let [v (get-in hick [:attrs key])]
-                    (if (or (and (= key :data-sw-when) (empty? (get-data project d v)))
-                            (and (= key :data-sw-when-not) (not (empty? (get-data project d v)))))
+                  (let [field-value (get-in hick [:attrs key])
+                        data-value (get-data project d field-value)]
+                    (if (or (and (= key :data-sw-when) (rich-empty? data-value))
+                            (and (= key :data-sw-when-not) (not (rich-empty? data-value))))
                       {:type :comment}
                       (update-in hick [:attrs] dissoc key))))]
     (cond
