@@ -3,7 +3,7 @@
   :source-paths ["src-clj" "src-cljc"]
   :min-lein-version "2.0.0"
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.clojure/clojurescript "1.9.521"]
+                 [org.clojure/clojurescript "1.9.946"]
                  [cljs-http "0.1.43"]
                  [pathetic "0.5.1"]
                  [hickory "0.7.1"]
@@ -15,7 +15,7 @@
                  [io.aviso/pretty "0.1.34"]
                  [org.apache.commons/commons-lang3 "3.5"]
                  [org.clojure/data.json "0.2.6"]
-                 [markdown-clj "0.9.99"]]
+                 [markdown-clj "1.0.1"]]
   :plugins [[lein-cljsbuild "1.1.6"]
             [lein-expectations "0.0.8"]]
   :cljsbuild {
