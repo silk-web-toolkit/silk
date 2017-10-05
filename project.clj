@@ -1,4 +1,4 @@
-(defproject org.silkyweb/silk "0.12.0"
+(defproject org.silkyweb/silk "0.12.1"
   :description "Silk static and dynamic publishing toolkit."
   :source-paths ["src-clj" "src-cljc"]
   :min-lein-version "2.0.0"
