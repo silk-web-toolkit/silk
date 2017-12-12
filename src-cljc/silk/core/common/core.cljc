@@ -17,7 +17,6 @@
 (defn silk-attr? [k] (re-find #"data-sw-(\S+)" (name k)))
 
 (defn- rich-empty? [v]
-  (defn boolean? [x] (instance? Boolean x)) ;; TODO remove in 1.9
   (cond
     (boolean? v) (not v)
     (number? v)  false

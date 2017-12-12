@@ -2,7 +2,7 @@
   :description "Silk static and dynamic publishing toolkit."
   :source-paths ["src-clj" "src-cljc"]
   :min-lein-version "2.0.0"
-  :dependencies [[org.clojure/clojure "1.8.0"]
+  :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.9.946"]
                  [cljs-http "0.1.43"]
                  [pathetic "0.5.1"]
