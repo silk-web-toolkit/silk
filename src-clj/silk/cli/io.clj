@@ -122,12 +122,8 @@
     (let [path (str (se/site-path project) "resource" (do/fs) "js" (do/fs))
           file (str path "tipuesearch_content.js")]
       (.mkdirs (io/file path))
-      (spit file (str
-        "var tipuesearch=" (json/write-str tp)
-        ";var tipuedrop=tipuesearch;"
-        "var tipuesearch_stop_words = [\"and\", \"be\", \"by\", \"do\", \"for\", \"he\", \"how\", \"if\", \"is\", \"it\", \"my\", \"not\", \"of\", \"or\", \"the\", \"to\", \"up\", \"what\", \"when\"];"
-        "var tipuesearch_replace = {\"words\": []};"
-        "var tipuesearch_stem = {\"words\": []};")))))
+      (spit file (str "var tipuesearch=" (json/write-str tp) ";"
+                      (slurp (io/resource "tipuesearch_set.js")))))))
 
 (defn store-project-dir
   "Writes the current project path and time to the central store."

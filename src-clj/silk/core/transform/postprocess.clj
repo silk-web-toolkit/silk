@@ -61,4 +61,4 @@
             {:title (get-title nav path node)
              :text (escaped (condensed (text node)))
              :tags ""
-             :loc (get-location path node)})))}))
+             :url (get-location path node)})))}))
