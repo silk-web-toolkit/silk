@@ -62,7 +62,7 @@
 (defn inject-attr
   [hick project d]
   (let [attrs (:attrs hick)
-        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-content %))) (keys attrs)))
+        s-attrs (select-keys attrs (filter #(and (silk-attr? %) (not (= :data-sw-text %)) (not (= :data-sw-search-content %))) (keys attrs)))
         n-attrs (into (sorted-map) (for [[k v] s-attrs] {(keyword (last (silk-attr? k))) (str (get-data project d v))}))]
     (-> hick
        (update-in [:attrs] merge n-attrs)

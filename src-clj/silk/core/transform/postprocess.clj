@@ -12,7 +12,7 @@
 (defn- silk-text-nodes
   [html]
   (spec/select
-    (spec/walker #(get-in % [:attrs :data-sw-content]))
+    (spec/walker #(get-in % [:attrs :data-sw-search-content]))
     (h/as-hickory (h/parse html))))
 
 (defn text
