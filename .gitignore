@@ -10,3 +10,16 @@
 .lein-deps-sum
 .lein-repl-history
 pom.xml
+resources/public/js/browser.js
+resources/public/js/browser.js.map
+resources/public/js/cljs
+resources/public/js/cljs_http
+resources/public/js/clojure
+resources/public/js/cognitect
+resources/public/js/com
+resources/public/js/goog
+resources/public/js/hickory
+resources/public/js/markdown
+resources/public/js/no
+resources/public/js/process
+resources/public/js/silk
