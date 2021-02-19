@@ -10,7 +10,7 @@ Improve the security of the web, use static wherever possible.  How many sites a
 
 ## Getting Started
 
-Please see the [silkyweb.org documentation page](http://www.silkyweb.org/documentation.html) for details on how to install and start using the Silk Web Toolkit.
+Please see the [silkyweb.org documentation page](http://silk-web-toolkit.github.io/silk-site//documentation.html) for details on how to install and start using the Silk Web Toolkit.
 
 The [latest Silk GitHub release page](https://github.com/silk-web-toolkit/silk/releases/latest) contains various platform specific binaries and the release notes.
 
@@ -26,7 +26,7 @@ For formatting we prefer two space indentation, this seems to work well for HTML
 
 To get started with contributing just come and ask about it on the [mailing list](http://groups.google.com/group/silk-user) and view our [issues list](https://github.com/organizations/silk-web-toolkit/dashboard/issues).
 
-Silk is a Clojure and ClojureScript project. 
+Silk is a Clojure and ClojureScript project.
 
 - To build compile and build an executable jar run `lein uberjar`.
 - To test your local changes with your silk project run `lein run spin -d ~/path/to/project`.
